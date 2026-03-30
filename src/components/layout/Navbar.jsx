@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Hexagon, Maximize2, Volume2, VolumeX } from 'lucide-react';
+import { ShieldCheck, Hexagon, LogOut, Maximize2, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAudio } from '../../context/AudioContext';
+import { useMode } from '../../context/ModeContext';
+import { useAuth } from '../../features/user/useAuth';
 import ProgressBar from '../ui/ProgressBar';
 import roleplaydLogo from '../../assets/roleplayd.png';
 import scenariosData from '../../data/scenarios.json';
@@ -10,14 +12,40 @@ import scenariosData from '../../data/scenarios.json';
 export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const { muted, toggleMuted, playSound, primeAudio } = useAudio();
+  const { mode, setMode, setUserContext, resetPersonalSession } = useMode();
+  const { logout } = useAuth();
   
   if (pathname === '/') return null;
 
   const { selectedRole, emotionalScore, activeInterventions } = state;
   const isIntervention = pathname === '/intervention';
+  const isPersonalMode = mode === 'personal';
   const totalInterventions = scenariosData.interventions.length;
+
+  async function handleLogout() {
+    try {
+      primeAudio();
+      playSound('click');
+      await logout();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      dispatch({ type: 'RESET' });
+      setMode('simulation');
+      setUserContext({
+        name: '',
+        gender: '',
+        role: '',
+        industry: '',
+        company: '',
+        experience: ''
+      });
+      resetPersonalSession();
+      navigate('/mode-select');
+    }
+  }
 
   return (
     <motion.nav 
@@ -73,6 +101,18 @@ export default function Navbar() {
 
         {/* Right: Game System Toggles / Settings */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {isPersonalMode && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-2 sm:px-3 py-1.5 rounded-lg bg-card-dark border-[2px] border-white/5 flex items-center gap-1.5 sm:gap-2 text-white/50 hover:text-accent transition-colors"
+              aria-label="Log out"
+              title="Log out"
+            >
+              <LogOut size={14} />
+              <span className="hidden sm:inline text-xs font-display font-bold">Logout</span>
+            </button>
+          )}
           <div className="px-2 sm:px-3 py-1.5 rounded-lg bg-card-dark border-[2px] border-white/5 flex items-center gap-1.5 sm:gap-2">
             <ShieldCheck size={14} className={activeInterventions.length > 0 ? "text-cyan drop-shadow-[0_0_5px_#00D4FF]" : "text-white/20"} />
             <span className="hidden sm:inline text-xs font-display font-bold text-white/50">{activeInterventions.length}/{totalInterventions} Mods</span>
