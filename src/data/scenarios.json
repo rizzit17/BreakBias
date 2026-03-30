@@ -1,15 +1,15 @@
 {
   "roles": [
     {
-      "id": "male-manager",
-      "name": "Alex Chen",
-      "title": "Senior Product Manager",
-      "pronoun": "He/Him",
-      "avatar": "male",
-      "color": "#00D4FF",
-      "gradient": "linear-gradient(135deg, #00D4FF 0%, #0066CC 100%)",
-      "bgClass": "bg-identity-male",
-      "description": "Confident, credited, visible. His ideas are heard, his authority unquestioned.",
+      "id": "intern",
+      "name": "Jamie Park",
+      "title": "Product Intern",
+      "pronoun": "They/Them",
+      "avatar": "intern",
+      "color": "#C5A3FF",
+      "gradient": "linear-gradient(135deg, #C5A3FF 0%, #9B59B6 100%)",
+      "bgClass": "bg-identity-intern",
+      "description": "Bright ideas, very little authority, and constant invisibility tax.",
       "locked": false
     },
     {
@@ -21,189 +21,165 @@
       "color": "#FF6B9D",
       "gradient": "linear-gradient(135deg, #FF6B9D 0%, #FF4D6D 100%)",
       "bgClass": "bg-identity-female",
-      "description": "Same role. Same skills. Interrupted, overlooked, and doubted every step of the way.",
+      "description": "Strong performer whose labor is frequently questioned, softened, or reassigned.",
       "locked": false
     },
     {
-      "id": "intern",
-      "name": "Jamie",
-      "title": "Product Intern",
-      "pronoun": "They/Them",
-      "avatar": "intern",
-      "color": "#C5A3FF",
-      "gradient": "linear-gradient(135deg, #C5A3FF 0%, #9B59B6 100%)",
-      "bgClass": "bg-identity-intern",
-      "description": "Invisible, underestimated, and routinely ignored. The ideas still come. The credit doesn't.",
-      "locked": true
+      "id": "male-manager",
+      "name": "Alex Chen",
+      "title": "Senior Product Manager",
+      "pronoun": "He/Him",
+      "avatar": "male",
+      "color": "#00D4FF",
+      "gradient": "linear-gradient(135deg, #00D4FF 0%, #0066CC 100%)",
+      "bgClass": "bg-identity-male",
+      "description": "Same role, same skill, but gets presumption of competence and immediate credit.",
+      "locked": false
+    },
+    {
+      "id": "executive",
+      "name": "Priya Rao",
+      "title": "VP of Strategy",
+      "pronoun": "She/Her",
+      "avatar": "executive",
+      "color": "#F6C344",
+      "gradient": "linear-gradient(135deg, #F6C344 0%, #D38B00 100%)",
+      "bgClass": "bg-identity-male",
+      "description": "High title, high scrutiny. Every mistake is treated as proof, not noise.",
+      "locked": false
+    },
+    {
+      "id": "hr-partner",
+      "name": "Miguel Santos",
+      "title": "HR Business Partner",
+      "pronoun": "He/Him",
+      "avatar": "hr",
+      "color": "#55E6A5",
+      "gradient": "linear-gradient(135deg, #55E6A5 0%, #1D9F73 100%)",
+      "bgClass": "bg-identity-male",
+      "description": "Expected to mediate conflict while carrying emotional residue no dashboard tracks.",
+      "locked": false
+    },
+    {
+      "id": "support-staff",
+      "name": "Lena Brooks",
+      "title": "Support Operations Lead",
+      "pronoun": "She/Her",
+      "avatar": "support",
+      "color": "#FF914D",
+      "gradient": "linear-gradient(135deg, #FF914D 0%, #D95B12 100%)",
+      "bgClass": "bg-identity-female",
+      "description": "Keeps the company running, yet gets treated like background infrastructure.",
+      "locked": false
     }
   ],
   "scenarios": [
     {
-      "id": "morning-meeting",
+      "id": "roadmap-meeting",
       "type": "meeting",
-      "title": "The Strategy Meeting",
+      "title": "Quarterly Roadmap Alignment",
       "time": "9:00 AM",
       "phase": "morning",
-      "description": "The quarterly product strategy meeting. Everyone is presenting their roadmap ideas.",
+      "description": "A high-stakes meeting where roadmap ownership, budget tradeoffs, and public credibility are all on the line.",
+      "biasMechanism": "Interruption and authority filtering",
+      "corporatePressure": ["meeting", "politics", "decision-making"],
       "identityOutcomes": {
-        "male-manager": {
-          "content": "You present the Q3 roadmap. The room is attentive. When you finish, Mark says, 'Solid thinking, Alex. Let's move forward with your vision.' Three heads nod in agreement.",
-          "reaction": "praised",
-          "biasLevel": 0,
-          "emotionalScore": 85,
-          "quote": "Solid thinking. Let's move forward with your vision.",
-          "speakerName": "Mark (Director)",
-          "interruptions": 0,
-          "creditGiven": true
-        },
-        "female-employee": {
-          "content": "You begin presenting the Q3 roadmap. Halfway through your second slide, David cuts in — 'Actually, what Sarah is trying to say is...' and rephrases your exact idea. The room listens to him instead.",
-          "reaction": "interrupted",
-          "biasLevel": 85,
-          "emotionalScore": 30,
-          "quote": "Actually, what Sarah is trying to say is...",
-          "speakerName": "David (Peer)",
-          "interruptions": 3,
-          "creditGiven": false,
-          "biasType": "mansplaining",
-          "biasLabel": "Interrupted & Paraphrased"
-        },
-        "intern": {
-          "content": "You raise your hand to contribute a key insight. Mark glances at you briefly, then looks back at his laptop. Your point goes unacknowledged. Ten minutes later, David says the same thing — to applause.",
-          "reaction": "ignored",
-          "biasLevel": 95,
-          "emotionalScore": 15,
-          "quote": "Good point, David.",
-          "speakerName": "Mark (Director)",
-          "interruptions": 0,
-          "creditGiven": false,
-          "biasType": "invisibility",
-          "biasLabel": "Completely Ignored"
-        }
+        "intern": { "content": "You surface a customer pattern. The room nods politely, then moves on. Ten minutes later the same point returns from a director and suddenly becomes strategic.", "reaction": "ignored", "biasLevel": 92, "emotionalScore": 22, "quote": "That is exactly the strategic lens we need.", "speakerName": "Chief of Staff", "interruptions": 0, "creditGiven": false, "biasType": "invisibility", "biasLabel": "Insight Reintroduced by Senior Voice" },
+        "female-employee": { "content": "You propose the roadmap sequencing. A peer cuts in with 'what Sarah means is...' and reframes your idea in blunter language. Leadership responds to him, not you.", "reaction": "interrupted", "biasLevel": 86, "emotionalScore": 35, "quote": "What Sarah is trying to say is...", "speakerName": "David (Peer)", "interruptions": 3, "creditGiven": false, "biasType": "mansplaining", "biasLabel": "Interrupted and Paraphrased" },
+        "male-manager": { "content": "You propose the roadmap sequencing. The VP leans in, asks one clarifying question, and assigns owners based on your structure.", "reaction": "praised", "biasLevel": 8, "emotionalScore": 88, "quote": "Let us run with Alex's version.", "speakerName": "VP Strategy", "interruptions": 0, "creditGiven": true },
+        "executive": { "content": "You outline the decision path. Instead of debating the logic, the room starts testing your confidence and asks whether you are 'sure' you want to take that risk publicly.", "reaction": "scrutinized", "biasLevel": 44, "emotionalScore": 63, "quote": "Are you comfortable owning that call?", "speakerName": "CEO", "interruptions": 1, "creditGiven": true, "biasType": "authority-doubt", "biasLabel": "Higher Rank, Higher Scrutiny" },
+        "hr-partner": { "content": "You raise the people impact of the plan. The room agrees it matters, then quietly parks the staffing concern because revenue pressure feels more urgent.", "reaction": "dismissed", "biasLevel": 58, "emotionalScore": 48, "quote": "We will circle back on the people side later.", "speakerName": "Finance Lead", "interruptions": 1, "creditGiven": false, "biasType": "invisible-labor", "biasLabel": "Culture Risk Deferred" },
+        "support-staff": { "content": "You flag the operational fallout the launch will create for support teams. Leadership thanks you for the heads-up, but no one adjusts scope or staffing.", "reaction": "acknowledged-but-ignored", "biasLevel": 74, "emotionalScore": 39, "quote": "That is good context. We still have to move forward.", "speakerName": "GM", "interruptions": 0, "creditGiven": false, "biasType": "workload-imbalance", "biasLabel": "Invisible Operational Burden" }
       }
     },
     {
-      "id": "feedback-email",
-      "type": "email",
-      "title": "Performance Feedback Email",
-      "time": "10:30 AM",
-      "phase": "morning",
-      "description": "Your manager sends you your quarterly performance review via email.",
-      "identityOutcomes": {
-        "male-manager": {
-          "subject": "Q3 Review — Exceptional Performance",
-          "from": "director@company.com",
-          "fromName": "Mark Director",
-          "body": "Alex,\n\nYour leadership during the Q3 launch was remarkable. Your decisive thinking and ability to align the team made all the difference. I'm recommending you for the Senior Director track.\n\nLet's grab coffee to discuss your growth path.\n\nBest,\nMark",
-          "tone": "positive",
-          "biasLevel": 0,
-          "keywords": ["leadership", "decisive", "remarkable"]
-        },
-        "female-employee": {
-          "subject": "Q3 Review — Performance Notes",
-          "from": "director@company.com",
-          "fromName": "Mark Director",
-          "body": "Sarah,\n\nYou did well this quarter. A few things to keep in mind — the team responds better when you're less assertive in meetings. Perhaps soften your communication style. Your emotional responses during the retrospective were noted.\n\nHappy to chat if you have questions.\n\nMark",
-          "tone": "mixed",
-          "biasLevel": 90,
-          "keywords": ["assertive", "emotional", "soften"],
-          "biasType": "gendered-language",
-          "biasLabel": "Penalized for 'Assertiveness'"
-        },
-        "intern": {
-          "subject": "Internship Check-In",
-          "from": "hr@company.com",
-          "fromName": "HR Team",
-          "body": "Hi Jamie,\n\nJust a routine check-in. How are you settling in? Let us know if you need anything.\n\nHope you're enjoying the experience!\n\nHR",
-          "tone": "dismissive",
-          "biasLevel": 75,
-          "keywords": ["routine", "hope", "experience"],
-          "biasType": "invisibility",
-          "biasLabel": "Routed to HR, Not Manager"
-        }
-      }
-    },
-    {
-      "id": "slack-chat",
+      "id": "deadline-escalation",
       "type": "chat",
-      "title": "Team Slack Thread",
-      "time": "12:00 PM",
+      "title": "Launch Deadline Escalation",
+      "time": "11:15 AM",
       "phase": "midday",
-      "description": "A team Slack discussion breaks out about a critical product decision.",
+      "description": "A cross-functional chat thread turns into a blame funnel as deadlines tighten and leadership starts watching.",
+      "biasMechanism": "Political exclusion in fast channels",
+      "corporatePressure": ["deadline", "politics", "visibility"],
       "identityOutcomes": {
-        "male-manager": {
-          "messages": [
-            { "sender": "You", "text": "I think we should delay the launch by two weeks for QA.", "isSelf": true },
-            { "sender": "Emily", "text": "That makes total sense. Better to ship right than ship fast." },
-            { "sender": "David", "text": "Agreed. Alex always thinks ahead. +1 on the delay." },
-            { "sender": "Mark", "text": "Locking it in. Two week delay. Thanks for catching this, Alex." }
-          ],
-          "biasLevel": 0,
-          "outcome": "Decision implemented immediately"
-        },
-        "female-employee": {
-          "messages": [
-            { "sender": "You", "text": "I think we should delay the launch by two weeks for QA.", "isSelf": true },
-            { "sender": "David", "text": "Hmm, not sure. We have stakeholder pressure." },
-            { "sender": "Emily", "text": "I see both sides..." },
-            { "sender": "David", "text": "Actually, I've been thinking — what if we delay launch by two weeks for QA? Just to make sure we ship quality." },
-            { "sender": "Mark", "text": "That's smart David. Let's do it. Great call." }
-          ],
-          "biasLevel": 95,
-          "outcome": "Idea stolen, credit given to male colleague",
-          "biasType": "credit-theft",
-          "biasLabel": "Idea Stolen in Real Time"
-        },
-        "intern": {
-          "messages": [
-            { "sender": "You", "text": "Should we consider a two-week QA delay?", "isSelf": true },
-            { "sender": "David", "text": "Hmm." },
-            { "sender": "Emily", "text": "Anyone else have thoughts?" },
-            { "sender": "Mark", "text": "Good discussion everyone. Let's table this for now." }
-          ],
-          "biasLevel": 80,
-          "outcome": "Suggestion completely ignored",
-          "biasType": "invisibility",
-          "biasLabel": "Message Ignored"
-        }
+        "intern": { "messages": [{ "sender": "You", "text": "We should slow rollout until the blocker is cleared.", "isSelf": true }, { "sender": "Eng Lead", "text": "Anyone more senior want to weigh in?" }, { "sender": "PM", "text": "Let us keep moving." }], "biasLevel": 82, "outcome": "Your caution is treated as inexperience.", "biasType": "authority-doubt", "biasLabel": "Valid Risk Framed as Junior Anxiety" },
+        "female-employee": { "messages": [{ "sender": "You", "text": "The quality risk is real. We should pause and re-sequence the launch.", "isSelf": true }, { "sender": "Ops", "text": "That sounds a little reactive." }, { "sender": "Peer", "text": "We could re-sequence the launch to de-risk the rollout." }, { "sender": "VP", "text": "Yes, let us do that. Nice recovery." }], "biasLevel": 90, "outcome": "Your recommendation lands only after someone else repeats it.", "biasType": "credit-theft", "biasLabel": "Idea Adopted After Repackaging" },
+        "male-manager": { "messages": [{ "sender": "You", "text": "We should re-sequence launch and protect the team from an avoidable fire.", "isSelf": true }, { "sender": "VP", "text": "Agreed. Freeze rollout and re-baseline by EOD." }], "biasLevel": 5, "outcome": "Decision executed immediately." },
+        "executive": { "messages": [{ "sender": "You", "text": "We are not shipping this in current condition.", "isSelf": true }, { "sender": "Board Liaison", "text": "Understood, but this will create external pressure." }, { "sender": "CEO", "text": "Document tradeoffs before we announce." }], "biasLevel": 31, "outcome": "Authority works, but every decision incurs political cost.", "biasType": "political-exclusion", "biasLabel": "Decision Carries Reputation Tax" },
+        "hr-partner": { "messages": [{ "sender": "You", "text": "The current pace is producing burnout signals across two teams.", "isSelf": true }, { "sender": "Revenue Lead", "text": "Noted. We can process burnout after launch." }], "biasLevel": 64, "outcome": "Human cost is logged but deprioritized.", "biasType": "invisible-labor", "biasLabel": "People Impact Deferred Again" },
+        "support-staff": { "messages": [{ "sender": "You", "text": "If we launch now, support queue volume could triple in 24 hours.", "isSelf": true }, { "sender": "Product", "text": "Can support absorb for a week?" }, { "sender": "You", "text": "Not without staffing help." }, { "sender": "Silence", "text": "No staffing owner replies." }], "biasLevel": 78, "outcome": "Operational labor becomes the hidden fallback plan.", "biasType": "workload-imbalance", "biasLabel": "Support Capacity Treated as Elastic" }
       }
     },
     {
-      "id": "promotion-talk",
-      "type": "meeting",
-      "title": "Promotion Conversation",
-      "time": "3:00 PM",
-      "phase": "afternoon",
-      "description": "A one-on-one with your manager about career advancement.",
+      "id": "performance-review",
+      "type": "email",
+      "title": "Performance Review Packet",
+      "time": "1:00 PM",
+      "phase": "midday",
+      "description": "Written feedback lands with all the subtle politics of compensation, promotion, and perceived leadership presence.",
+      "biasMechanism": "Review language and opportunity gating",
+      "corporatePressure": ["review", "promotion", "politics"],
       "identityOutcomes": {
-        "male-manager": {
-          "content": "Mark leans forward. 'Alex, we've been watching your trajectory. The VP slot is opening up. I want to nominate you — you have the presence and potential.' He hands you a Leadership Development roadmap.",
-          "reaction": "promoted",
-          "biasLevel": 0,
-          "emotionalScore": 95,
-          "quote": "You have the presence and the potential.",
-          "speakerName": "Mark (Director)"
-        },
-        "female-employee": {
-          "content": "Mark smiles warmly. 'Sarah, you've been doing great. Maybe in a few years when you're ready...' You ask about the VP opening. 'We need someone who can really command the room, you know? But keep growing!' The conversation ends before you can respond.",
-          "reaction": "deflected",
-          "biasLevel": 88,
-          "emotionalScore": 25,
-          "quote": "Maybe in a few years when you're ready...",
-          "speakerName": "Mark (Director)",
-          "biasType": "glass-ceiling",
-          "biasLabel": "Promotion Deferred Indefinitely"
-        },
-        "intern": {
-          "content": "You requested a 1:1 with Mark two weeks ago. His assistant finally responds: 'Mark's calendar is fully booked. Could you speak to your supervisor instead?' Your direct message to Mark goes unread for 6 days.",
-          "reaction": "ignored",
-          "biasLevel": 100,
-          "emotionalScore": 10,
-          "quote": "Mark's calendar is fully booked.",
-          "speakerName": "Executive Assistant",
-          "biasType": "access-denial",
-          "biasLabel": "Meeting Request Denied"
-        }
+        "intern": { "subject": "Growth Notes", "from": "manager@company.com", "fromName": "Manager", "body": "You have potential. Continue observing how senior voices frame priorities before taking bigger swings.", "tone": "patronizing", "biasLevel": 70, "keywords": ["potential", "observe", "senior voices"], "biasType": "authority-doubt", "biasLabel": "Potential Without Sponsorship" },
+        "female-employee": { "subject": "Performance Notes", "from": "director@company.com", "fromName": "Director", "body": "You delivered well. Feedback remains that your tone can feel intense in cross-functional settings. Continued growth in executive presence will help.", "tone": "mixed", "biasLevel": 88, "keywords": ["intense", "executive presence"], "biasType": "gendered-language", "biasLabel": "Penalized for Directness" },
+        "male-manager": { "subject": "Promotion Track Update", "from": "director@company.com", "fromName": "Director", "body": "Your judgment under pressure stood out. We are recommending you for the next-level talent slate.", "tone": "positive", "biasLevel": 4, "keywords": ["judgment", "recommend", "talent slate"] },
+        "executive": { "subject": "Leadership Calibration", "from": "ceo@company.com", "fromName": "CEO", "body": "You are delivering at the level expected. There is, however, more attention on how confidently you manage external optics.", "tone": "pressurized", "biasLevel": 36, "keywords": ["expected", "optics", "confidently"], "biasType": "political-exclusion", "biasLabel": "Optics Tax Applied" },
+        "hr-partner": { "subject": "Business Partnership Review", "from": "coo@company.com", "fromName": "COO", "body": "You keep difficult conversations moving. That said, the strategic work is harder to see because so much of your value is relational.", "tone": "mixed", "biasLevel": 61, "keywords": ["relational", "harder to see"], "biasType": "invisible-labor", "biasLabel": "Work Valued but Not Counted" },
+        "support-staff": { "subject": "Operational Review Summary", "from": "ops-director@company.com", "fromName": "Ops Director", "body": "You handled escalations well under pressure. Future advancement will depend on becoming more strategic, not just dependable.", "tone": "mixed", "biasLevel": 69, "keywords": ["dependable", "not just"], "biasType": "workload-imbalance", "biasLabel": "Reliability Used as Ceiling" }
+      }
+    },
+    {
+      "id": "invisible-labor",
+      "type": "meeting",
+      "title": "Culture and Cleanup Work",
+      "time": "2:30 PM",
+      "phase": "afternoon",
+      "description": "A planning meeting reveals who gets assigned high-visibility strategy and who quietly inherits the office's invisible labor.",
+      "biasMechanism": "Invisible labor allocation",
+      "corporatePressure": ["meetings", "invisible labor", "team culture"],
+      "identityOutcomes": {
+        "intern": { "content": "You are asked to take notes, prep slides, and follow up on logistics so the room can move faster.", "reaction": "assigned-support-work", "biasLevel": 76, "emotionalScore": 34, "quote": "Can Jamie capture all of this?", "speakerName": "Project Lead", "creditGiven": false, "biasType": "invisible-labor", "biasLabel": "Administrative Gravity" },
+        "female-employee": { "content": "You are asked to smooth tension between teams and document decisions after the meeting, even though you were supposed to lead the strategic section.", "reaction": "rerouted", "biasLevel": 83, "emotionalScore": 29, "quote": "Sarah is great at keeping everyone aligned.", "speakerName": "Director", "creditGiven": false, "biasType": "invisible-labor", "biasLabel": "Team Harmony Tax" },
+        "male-manager": { "content": "You stay focused on the strategy discussion while follow-up labor gets redistributed around you.", "reaction": "protected", "biasLevel": 6, "emotionalScore": 86, "quote": "Alex, stay on the strategic points.", "speakerName": "VP", "creditGiven": true },
+        "executive": { "content": "You avoid the cleanup tasks, but absorb the reputational burden if alignment still fails later.", "reaction": "politically-exposed", "biasLevel": 28, "emotionalScore": 66, "quote": "We will hold leadership accountable for the optics here.", "speakerName": "CEO", "creditGiven": true, "biasType": "political-exclusion", "biasLabel": "Visibility Without Shielding" },
+        "hr-partner": { "content": "You become default owner for morale, messaging, and conflict containment even though no additional resourcing follows.", "reaction": "overloaded", "biasLevel": 87, "emotionalScore": 26, "quote": "HR can probably help absorb the emotional side.", "speakerName": "COO", "creditGiven": false, "biasType": "invisible-labor", "biasLabel": "Emotional Cleanup Assigned" },
+        "support-staff": { "content": "You are asked to coordinate handoffs, monitor escalations, and keep customers calm, with none of that labor reflected in strategic influence.", "reaction": "overloaded", "biasLevel": 89, "emotionalScore": 24, "quote": "Support will carry the customer side.", "speakerName": "GM", "creditGiven": false, "biasType": "workload-imbalance", "biasLabel": "Critical Labor, Low Voice" }
+      }
+    },
+    {
+      "id": "promotion-calibration",
+      "type": "meeting",
+      "title": "Promotion Calibration",
+      "time": "4:00 PM",
+      "phase": "afternoon",
+      "description": "Leaders compare talent side by side and decide whose contributions count as leadership versus support.",
+      "biasMechanism": "Accumulated disadvantage in promotion rooms",
+      "corporatePressure": ["reviews", "promotion", "politics"],
+      "identityOutcomes": {
+        "intern": { "content": "You are called high-potential but too early to discuss in serious terms.", "reaction": "deferred", "biasLevel": 60, "emotionalScore": 42, "quote": "Maybe next cycle.", "speakerName": "Talent Lead", "biasType": "authority-doubt", "biasLabel": "Future Promise, Present Exclusion" },
+        "female-employee": { "content": "The room cites 'a few rough moments in meetings' and reframes your accumulated wins as solid execution rather than executive readiness.", "reaction": "deflected", "biasLevel": 93, "emotionalScore": 21, "quote": "Strong operator, still developing executive presence.", "speakerName": "SVP", "biasType": "glass-ceiling", "biasLabel": "Compound Bias in Calibration" },
+        "male-manager": { "content": "Your execution and calm under pressure are framed as clear indicators of next-level readiness.", "reaction": "promoted", "biasLevel": 3, "emotionalScore": 92, "quote": "He is ready now.", "speakerName": "SVP" },
+        "executive": { "content": "You are judged against a perfection standard. One visible misstep is used to balance out several wins.", "reaction": "scrutinized", "biasLevel": 41, "emotionalScore": 59, "quote": "The bar is simply different at that level.", "speakerName": "Board Liaison", "biasType": "authority-doubt", "biasLabel": "Excellence Discounted by Optics" },
+        "hr-partner": { "content": "You influence every promotion room but your own advancement case is treated as operational rather than strategic.", "reaction": "stalled", "biasLevel": 71, "emotionalScore": 37, "quote": "Important role, but not a business-driving one.", "speakerName": "CFO", "biasType": "invisible-labor", "biasLabel": "Strategic Value Rendered Invisible" },
+        "support-staff": { "content": "Your reliability is praised, then used as the reason leadership cannot 'afford' to move you upward.", "reaction": "stalled", "biasLevel": 84, "emotionalScore": 28, "quote": "We really need Lena exactly where she is.", "speakerName": "Ops Director", "biasType": "workload-imbalance", "biasLabel": "Dependability Becomes a Trap" }
+      }
+    },
+    {
+      "id": "after-hours-escalation",
+      "type": "chat",
+      "title": "After-Hours Escalation",
+      "time": "7:30 PM",
+      "phase": "end",
+      "description": "A late-night escalation exposes who is assumed to be endlessly available and whose time is protected.",
+      "biasMechanism": "Availability expectations and compounding fatigue",
+      "corporatePressure": ["deadlines", "invisible labor", "availability"],
+      "identityOutcomes": {
+        "intern": { "messages": [{ "sender": "You", "text": "I can help triage tonight if needed.", "isSelf": true }, { "sender": "Lead", "text": "Thanks, let the full-timers take the hard parts." }], "biasLevel": 47, "outcome": "Protected from some labor, but excluded from real ownership.", "biasType": "authority-doubt", "biasLabel": "Trusted to Help, Not Lead" },
+        "female-employee": { "messages": [{ "sender": "Manager", "text": "Can you also coordinate the follow-up summary tonight?" }, { "sender": "You", "text": "I can do that after the escalation call.", "isSelf": true }, { "sender": "Manager", "text": "Appreciate it, you always keep things together." }], "biasLevel": 81, "outcome": "Extra labor gets attached to your competence as if it costs nothing.", "biasType": "invisible-labor", "biasLabel": "Reliability Tax After Hours" },
+        "male-manager": { "messages": [{ "sender": "VP", "text": "Can you make the call and decide if we wake the full team?" }, { "sender": "You", "text": "Yes, I will own the escalation path.", "isSelf": true }], "biasLevel": 11, "outcome": "Authority is high, but support labor stays elsewhere." },
+        "executive": { "messages": [{ "sender": "CEO", "text": "Handle the optics and update the board if needed." }, { "sender": "You", "text": "I will send the external narrative in 30 minutes.", "isSelf": true }], "biasLevel": 33, "outcome": "You get power and pressure in equal measure.", "biasType": "political-exclusion", "biasLabel": "Always On for Reputation Risk" },
+        "hr-partner": { "messages": [{ "sender": "Ops", "text": "Can HR prep talking points in case morale slips tomorrow?" }, { "sender": "You", "text": "Yes, I will draft a manager note tonight.", "isSelf": true }], "biasLevel": 72, "outcome": "You inherit emotional contingency work after everyone else logs off.", "biasType": "invisible-labor", "biasLabel": "Emotional Standby Labor" },
+        "support-staff": { "messages": [{ "sender": "GM", "text": "Support should stay online until the queue normalizes." }, { "sender": "You", "text": "We need a rotation if this lasts all night.", "isSelf": true }, { "sender": "GM", "text": "Do what you can for now." }], "biasLevel": 88, "outcome": "Customer pain becomes your team's overnight burden by default.", "biasType": "workload-imbalance", "biasLabel": "Availability Assumed, Not Negotiated" }
       }
     }
   ],
@@ -214,36 +190,66 @@
     "invisibility": { "label": "Invisibility", "color": "#9B59B6", "icon": "eye-off" },
     "gendered-language": { "label": "Gendered Language", "color": "#FF6B9D", "icon": "message" },
     "glass-ceiling": { "label": "Glass Ceiling", "color": "#C5A3FF", "icon": "bar-chart" },
-    "access-denial": { "label": "Access Denial", "color": "#9B59B6", "icon": "lock" }
+    "access-denial": { "label": "Access Denial", "color": "#9B59B6", "icon": "lock" },
+    "authority-doubt": { "label": "Authority Doubt", "color": "#F6C344", "icon": "alert-circle" },
+    "political-exclusion": { "label": "Political Exclusion", "color": "#00D4FF", "icon": "network" },
+    "invisible-labor": { "label": "Invisible Labor", "color": "#55E6A5", "icon": "heart-handshake" },
+    "workload-imbalance": { "label": "Workload Imbalance", "color": "#FF914D", "icon": "briefcase" }
   },
   "interventions": [
     {
       "id": "structured-agenda",
       "title": "Structured Meeting Agendas",
-      "description": "All participants are given equal time slots on the agenda. Interruptions are tracked.",
-      "impact": "Reduces interruption bias by 67%",
-      "icon": "calendar"
+      "description": "Time-boxed speaking order and turn tracking reduce interruption and authority filtering.",
+      "impact": "Cuts meeting interruption bias and authority filtering",
+      "icon": "calendar",
+      "targets": ["mansplaining", "interruption", "authority-doubt"],
+      "reduction": 18
     },
     {
       "id": "blind-authorship",
       "title": "Blind Credit Attribution",
-      "description": "Ideas are recorded with timestamps and author tags before meetings to ensure proper credit.",
-      "impact": "Reduces credit theft by 78%",
-      "icon": "shield"
+      "description": "Ideas are logged with timestamps before discussion so ownership survives politics.",
+      "impact": "Reduces credit theft and attribution drift",
+      "icon": "shield",
+      "targets": ["credit-theft", "invisibility"],
+      "reduction": 22
     },
     {
       "id": "inclusive-language",
       "title": "Inclusive Language Policy",
-      "description": "Feedback templates replace gendered language. Words like 'assertive' and 'emotional' are flagged.",
-      "impact": "Reduces gendered language in reviews by 82%",
-      "icon": "check-circle"
+      "description": "Performance feedback templates flag coded language and double standards.",
+      "impact": "Lowers review bias and glass ceiling narratives",
+      "icon": "check-circle",
+      "targets": ["gendered-language", "glass-ceiling", "authority-doubt"],
+      "reduction": 16
     },
     {
       "id": "sponsor-program",
       "title": "Sponsorship Program",
-      "description": "Representatives from underrepresented groups are actively sponsored for advancement opportunities.",
-      "impact": "Increases promotion equity by 45%",
-      "icon": "users"
+      "description": "Leaders are accountable for advocating talent into real opportunities, not just praise.",
+      "impact": "Improves promotion fairness and access",
+      "icon": "users",
+      "targets": ["glass-ceiling", "access-denial", "political-exclusion"],
+      "reduction": 20
+    },
+    {
+      "id": "invisible-work-audit",
+      "title": "Invisible Work Audit",
+      "description": "Team labor outside job descriptions is tracked and redistributed visibly.",
+      "impact": "Reduces hidden coordination and emotional labor concentration",
+      "icon": "clipboard-list",
+      "targets": ["invisible-labor", "workload-imbalance"],
+      "reduction": 24
+    },
+    {
+      "id": "coverage-rotation",
+      "title": "Coverage Rotation Policy",
+      "description": "After-hours escalation and support load are rotated instead of assigned by habit.",
+      "impact": "Reduces fatigue accumulation and invisible availability tax",
+      "icon": "refresh-cw",
+      "targets": ["workload-imbalance", "invisibility"],
+      "reduction": 14
     }
   ]
 }

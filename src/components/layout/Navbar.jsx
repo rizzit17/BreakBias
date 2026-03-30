@@ -4,6 +4,7 @@ import { ShieldCheck, Hexagon, Maximize2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ProgressBar from '../ui/ProgressBar';
 import roleplaydLogo from '../../assets/roleplayd.png';
+import scenariosData from '../../data/scenarios.json';
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -14,6 +15,7 @@ export default function Navbar() {
 
   const { selectedRole, emotionalScore, activeInterventions } = state;
   const isIntervention = pathname === '/intervention';
+  const totalInterventions = scenariosData.interventions.length;
 
   return (
     <motion.nav 
@@ -64,7 +66,7 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="px-2 sm:px-3 py-1.5 rounded-lg bg-card-dark border-[2px] border-white/5 flex items-center gap-1.5 sm:gap-2">
             <ShieldCheck size={14} className={activeInterventions.length > 0 ? "text-cyan drop-shadow-[0_0_5px_#00D4FF]" : "text-white/20"} />
-            <span className="hidden sm:inline text-xs font-display font-bold text-white/50">{activeInterventions.length}/4 Mods</span>
+            <span className="hidden sm:inline text-xs font-display font-bold text-white/50">{activeInterventions.length}/{totalInterventions} Mods</span>
           </div>
           <button className="hidden sm:flex w-8 h-8 rounded-lg bg-card-dark border-[2px] border-white/5 items-center justify-center text-white/30 hover:text-white transition-colors">
             <Maximize2 size={14} />

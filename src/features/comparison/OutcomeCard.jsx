@@ -74,6 +74,7 @@ export default function OutcomeCard({ outcome, role, isReference = false }) {
         )}
         {outcome.creditGiven === true && <Badge variant="success">Credit Given</Badge>}
         {outcome.creditGiven === false && biasLevel > 0 && <Badge variant="danger">Credit Denied</Badge>}
+        {outcome.interventionLift > 0 && <Badge variant="success">-{outcome.interventionLift}% via Mods</Badge>}
       </div>
 
       {/* Emotional score */}

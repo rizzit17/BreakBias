@@ -48,6 +48,9 @@ export default function PolicyToggle({ className = '' }) {
                 <div className="font-display text-sm font-medium opacity-80 leading-snug">
                   {p.description}
                 </div>
+                <div className="mt-2 text-[11px] font-display font-black uppercase tracking-widest text-white/40">
+                  Test impact: {p.impact}
+                </div>
               </div>
 
               {isActive && (

@@ -9,6 +9,9 @@ export default function PageWrapper({ children, className = '', ambientOrbs = tr
     'male-manager': { c1: '#00D4FF', c2: '#C5A3FF', c3: '#0066CC' },
     'female-employee': { c1: '#FF6B9D', c2: '#C5A3FF', c3: '#FF4D6D' },
     'intern': { c1: '#C5A3FF', c2: '#9B59B6', c3: '#00D4FF' },
+    'executive': { c1: '#F6C344', c2: '#FF914D', c3: '#D38B00' },
+    'hr-partner': { c1: '#55E6A5', c2: '#00D4FF', c3: '#1D9F73' },
+    'support-staff': { c1: '#FF914D', c2: '#F6C344', c3: '#D95B12' },
     default: { c1: '#C5A3FF', c2: '#00D4FF', c3: '#FF4D6D' },
   };
   const orbs = orbConfigs[roleId] || orbConfigs.default;

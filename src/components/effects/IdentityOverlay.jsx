@@ -16,6 +16,21 @@ const ROLE_OVERLAYS = {
     gradient: 'radial-gradient(ellipse at 50% 30%, rgba(197, 163, 255, 0.08) 0%, transparent 60%)',
     borderColor: 'rgba(197, 163, 255, 0.15)',
   },
+  'executive': {
+    color: '#F6C344',
+    gradient: 'radial-gradient(ellipse at 65% 30%, rgba(246, 195, 68, 0.10) 0%, transparent 60%)',
+    borderColor: 'rgba(246, 195, 68, 0.18)',
+  },
+  'hr-partner': {
+    color: '#55E6A5',
+    gradient: 'radial-gradient(ellipse at 40% 35%, rgba(85, 230, 165, 0.10) 0%, transparent 60%)',
+    borderColor: 'rgba(85, 230, 165, 0.18)',
+  },
+  'support-staff': {
+    color: '#FF914D',
+    gradient: 'radial-gradient(ellipse at 55% 35%, rgba(255, 145, 77, 0.10) 0%, transparent 60%)',
+    borderColor: 'rgba(255, 145, 77, 0.18)',
+  },
 };
 
 export default function IdentityOverlay({ roleId, children, className = '', showBorder = true }) {

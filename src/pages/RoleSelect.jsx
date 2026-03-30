@@ -37,9 +37,12 @@ export default function RoleSelect() {
 
   // RPG Stat Multipliers mapping
   const roleStats = {
-    'male-manager': { str: 'High', def: 'High', luk: 'Max' },
+    'intern': { str: 'Low', def: 'Low', luk: 'Med' },
     'female-employee': { str: 'Med', def: 'Low', luk: 'Low' },
-    'intern': { str: 'Low', def: 'Low', luk: 'Med' }
+    'male-manager': { str: 'High', def: 'High', luk: 'Max' },
+    'executive': { str: 'High', def: 'Med', luk: 'Low' },
+    'hr-partner': { str: 'Med', def: 'Med', luk: 'Low' },
+    'support-staff': { str: 'Med', def: 'High', luk: 'Low' }
   };
 
   return (
@@ -48,7 +51,7 @@ export default function RoleSelect() {
         <div className="max-w-5xl mx-auto flex flex-col items-center">
           
           <motion.div initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center mb-12">
-            <StatBadge value="1/3" label="Players" color="#00D4FF" className="mb-4" />
+            <StatBadge value={`${allRoles.length}`} label="Players" color="#00D4FF" className="mb-4" />
             <h1 className="text-5xl font-display font-black text-white uppercase text-game-shadow">
               SELECT YOUR <span className="text-primary">FIGHTER</span>
             </h1>

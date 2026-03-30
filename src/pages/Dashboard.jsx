@@ -8,10 +8,11 @@ import AvatarMorph from '../components/effects/AvatarMorph';
 import StatBadge from '../components/ui/StatBadge';
 import { useApp } from '../context/AppContext';
 import { useScenarioEngine } from '../hooks/useScenarioEngine';
+import { useBiasEngine } from '../hooks/useBiasEngine';
 import { useMode } from '../context/ModeContext';
 import { generatePersonalScenario } from '../services/personalModeAI';
 import { generateUserScenario } from '../data/userScenarios';
-import { Mail, MessageSquare, MapPin } from 'lucide-react';
+import { Mail, MessageSquare, MapPin, Layers3, Users2 } from 'lucide-react';
 
 const EMAIL_PREVIEWS = {
   'male-manager': [{ from: 'Mark D.', text: 'Q3 Review — Exceptional Performance', unread: true, color: '#00D4FF' }],
@@ -28,6 +29,7 @@ const CHAT_MSGS = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { state } = useApp();
+  const { getAccumulationIndex, getCompoundDisadvantageLabel, getInvisibleLaborLoad } = useBiasEngine();
   const { mode, userContext, personalSession, setPersonalSession } = useMode();
   const getScenarios = useScenarioEngine();
   const { selectedRole, completedScenarios } = state;
@@ -48,6 +50,7 @@ export default function Dashboard() {
     : (CHAT_MSGS[selectedRole.id] || []);
   const scenarios = getScenarios();
   const currentScenarioIndex = completedScenarios.length;
+  const compoundLabel = getCompoundDisadvantageLabel();
 
   useEffect(() => {
     if (!isPersonalMode || isGeneratingScenario) return;
@@ -160,6 +163,37 @@ export default function Dashboard() {
                   <MapPin size={200} color="#C5A3FF" className="hidden sm:block" />
                 </div>
               </GameCard>
+            </motion.div>
+
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <GameCard className="p-5 border-2 border-white/10 bg-card-dark">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Layers3 size={18} className="text-primary" />
+                    <div className="text-xs font-display font-black uppercase tracking-widest text-primary">
+                      Bias Accumulation
+                    </div>
+                  </div>
+                  <div className="text-3xl font-display font-black text-white mb-1">{getAccumulationIndex()}</div>
+                  <div className="text-sm font-display font-bold" style={{ color: compoundLabel.color }}>{compoundLabel.label}</div>
+                  <p className="text-xs text-white/50 mt-2 leading-relaxed">
+                    Small disadvantages are compounding across meetings, deadlines, reviews, and visibility moments.
+                  </p>
+                </GameCard>
+                <GameCard className="p-5 border-2 border-white/10 bg-card-dark">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Users2 size={18} className="text-cyan" />
+                    <div className="text-xs font-display font-black uppercase tracking-widest text-cyan">
+                      Invisible Labor
+                    </div>
+                  </div>
+                  <div className="text-3xl font-display font-black text-white mb-1">{getInvisibleLaborLoad()}</div>
+                  <div className="text-sm font-display font-bold text-white/70">uncredited load events</div>
+                  <p className="text-xs text-white/50 mt-2 leading-relaxed">
+                    Tracks the cleanup, coordination, and emotional labor the workplace quietly assigns.
+                  </p>
+                </GameCard>
+              </div>
             </motion.div>
 
             {/* Stage Map / Levels */}

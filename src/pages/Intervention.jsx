@@ -6,14 +6,18 @@ import GameButton from '../components/ui/GameButton';
 import GameCard from '../components/ui/GameCard';
 import StatBadge from '../components/ui/StatBadge';
 import { useApp } from '../context/AppContext';
+import { useBiasEngine } from '../hooks/useBiasEngine';
+import scenariosData from '../data/scenarios.json';
 import { ShieldCheck, ArrowRight, Save, ShieldAlert } from 'lucide-react';
 import ProgressBar from '../components/ui/ProgressBar';
 
 export default function Intervention() {
   const navigate = useNavigate();
   const { state } = useApp();
+  const { getInterventionImpactPreview, getAccumulationIndex, getInvisibleLaborLoad } = useBiasEngine();
   const { activeInterventions } = state;
   const policiesActive = activeInterventions.length;
+  const totalPolicies = scenariosData.interventions.length;
   const systemStable = policiesActive >= 3;
 
   return (
@@ -56,10 +60,25 @@ export default function Intervention() {
                   
                   <div className="space-y-2">
                     <ProgressBar 
-                       value={policiesActive} max={4} 
+                       value={policiesActive} max={totalPolicies} 
                        label="Server Patch Progress" 
                        color={systemStable ? '#00D4FF' : '#FF6B9D'}
                     />
+                  </div>
+
+                  <div className="grid sm:grid-cols-3 gap-3 mt-6">
+                    <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                      <div className="text-[10px] font-display font-black uppercase tracking-widest text-primary mb-1">Compounded Bias</div>
+                      <div className="text-xl font-display font-black text-white">{getAccumulationIndex()}</div>
+                    </div>
+                    <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                      <div className="text-[10px] font-display font-black uppercase tracking-widest text-cyan mb-1">Invisible Labor</div>
+                      <div className="text-xl font-display font-black text-white">{getInvisibleLaborLoad()}</div>
+                    </div>
+                    <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                      <div className="text-[10px] font-display font-black uppercase tracking-widest text-accent mb-1">Bias Recoverable</div>
+                      <div className="text-xl font-display font-black text-white">{getInterventionImpactPreview()}</div>
+                    </div>
                   </div>
               </GameCard>
             </motion.div>

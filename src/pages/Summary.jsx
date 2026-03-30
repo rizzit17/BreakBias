@@ -15,7 +15,16 @@ export default function Summary() {
   const { state } = useApp();
   const { mode } = useMode();
   const { selectedRole, emotionalScore, totalBiasEvents } = state;
-  const { getBiasSeverity, getEmotionalState, interruptionCount, visibilityScore } = useBiasEngine();
+  const {
+    getBiasSeverity,
+    getEmotionalState,
+    interruptionCount,
+    visibilityScore,
+    getAccumulationIndex,
+    getCompoundDisadvantageLabel,
+    getInvisibleLaborLoad,
+    getInterventionImpactPreview
+  } = useBiasEngine();
   const isPersonalMode = mode === 'personal';
 
   if (!selectedRole) { navigate(isPersonalMode ? '/setup' : '/role-select'); return null; }
@@ -23,6 +32,7 @@ export default function Summary() {
   const severity = getBiasSeverity();
   const emotional = getEmotionalState();
   const isHardMode = severity > 60;
+  const compoundLabel = getCompoundDisadvantageLabel();
 
   const metrics = [
     { label: 'Confidence XP', value: emotionalScore, max: 100, color: '#C5A3FF', icon: <TrendingUp size={16} /> },
@@ -91,6 +101,30 @@ export default function Summary() {
                 </div>
               </GameCard>
             </motion.div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 w-full mt-8">
+            <GameCard hover={false} className="p-6 border-4 border-gray-800 bg-card-dark">
+              <div className="text-xs font-display font-black uppercase tracking-widest mb-2" style={{ color: compoundLabel.color }}>
+                Compound Disadvantage
+              </div>
+              <div className="text-3xl font-display font-black text-white">{getAccumulationIndex()}</div>
+              <div className="text-sm font-display font-bold mt-2" style={{ color: compoundLabel.color }}>{compoundLabel.label}</div>
+            </GameCard>
+            <GameCard hover={false} className="p-6 border-4 border-gray-800 bg-card-dark">
+              <div className="text-xs font-display font-black uppercase tracking-widest mb-2 text-cyan">
+                Invisible Labor Load
+              </div>
+              <div className="text-3xl font-display font-black text-white">{getInvisibleLaborLoad()}</div>
+              <div className="text-sm font-display font-bold mt-2 text-white/60">times support work became hidden tax</div>
+            </GameCard>
+            <GameCard hover={false} className="p-6 border-4 border-gray-800 bg-card-dark">
+              <div className="text-xs font-display font-black uppercase tracking-widest mb-2 text-primary">
+                Intervention Test Value
+              </div>
+              <div className="text-3xl font-display font-black text-white">{getInterventionImpactPreview()}</div>
+              <div className="text-sm font-display font-bold mt-2 text-white/60">projected bias points recoverable with active policy design</div>
+            </GameCard>
           </div>
 
           {/* Nav Buttons */}

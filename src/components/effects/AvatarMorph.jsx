@@ -5,6 +5,10 @@ export default function AvatarMorph({ roleId, size = 64, isAnimating = false }) 
     'male-manager': { color: '#00D4FF', letter: 'ALEX', border: '#006B8A' },
     'female-employee': { color: '#FF4D6D', letter: 'SARAH', border: '#900021' },
     'intern': { color: '#C5A3FF', letter: 'JAMIE', border: '#6C3483' },
+    'executive': { color: '#F6C344', letter: 'PRIYA', border: '#A96A00' },
+    'hr-partner': { color: '#55E6A5', letter: 'MIGUEL', border: '#1D9F73' },
+    'support-staff': { color: '#FF914D', letter: 'LENA', border: '#D95B12' },
+    'personal-user': { color: '#00D4FF', letter: 'YOU', border: '#006B8A' },
     'default': { color: '#ffffff', letter: '??', border: '#666' }
   };
 
