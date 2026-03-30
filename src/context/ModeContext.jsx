@@ -4,14 +4,21 @@ const ModeContext = createContext();
 const MODE_STORAGE_KEY = 'workdayReplay.modeContext';
 const defaultUserContext = {
   name: '',
+  gender: '',
   role: '',
   industry: '',
+  company: '',
   experience: ''
+};
+const defaultPersonalSession = {
+  scenarios: [],
+  evaluations: []
 };
 
 export function ModeProvider({ children }) {
   const [mode, setMode] = useState('simulation');
   const [userContext, setUserContext] = useState(defaultUserContext);
+  const [personalSession, setPersonalSession] = useState(defaultPersonalSession);
 
   useEffect(() => {
     try {
@@ -24,6 +31,14 @@ export function ModeProvider({ children }) {
       if (parsed?.userContext && typeof parsed.userContext === 'object') {
         setUserContext({ ...defaultUserContext, ...parsed.userContext });
       }
+      if (parsed?.personalSession && typeof parsed.personalSession === 'object') {
+        setPersonalSession({
+          ...defaultPersonalSession,
+          ...parsed.personalSession,
+          scenarios: Array.isArray(parsed.personalSession.scenarios) ? parsed.personalSession.scenarios : [],
+          evaluations: Array.isArray(parsed.personalSession.evaluations) ? parsed.personalSession.evaluations : []
+        });
+      }
     } catch {
       // Ignore corrupted persisted data.
     }
@@ -31,13 +46,31 @@ export function ModeProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(MODE_STORAGE_KEY, JSON.stringify({ mode, userContext }));
+      localStorage.setItem(
+        MODE_STORAGE_KEY,
+        JSON.stringify({ mode, userContext, personalSession })
+      );
     } catch {
       // Ignore persistence errors.
     }
-  }, [mode, userContext]);
+  }, [mode, userContext, personalSession]);
 
-  const value = useMemo(() => ({ mode, setMode, userContext, setUserContext }), [mode, userContext]);
+  function resetPersonalSession() {
+    setPersonalSession(defaultPersonalSession);
+  }
+
+  const value = useMemo(
+    () => ({
+      mode,
+      setMode,
+      userContext,
+      setUserContext,
+      personalSession,
+      setPersonalSession,
+      resetPersonalSession
+    }),
+    [mode, userContext, personalSession]
+  );
 
   return (
     <ModeContext.Provider value={value}>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -8,6 +9,7 @@ import StatBadge from '../components/ui/StatBadge';
 import { useApp } from '../context/AppContext';
 import { useScenarioEngine } from '../hooks/useScenarioEngine';
 import { useMode } from '../context/ModeContext';
+import { generatePersonalScenario } from '../services/personalModeAI';
 import { Mail, MessageSquare, MapPin } from 'lucide-react';
 
 const EMAIL_PREVIEWS = {
@@ -25,10 +27,12 @@ const CHAT_MSGS = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { state } = useApp();
-  const { mode, userContext } = useMode();
+  const { mode, userContext, personalSession, setPersonalSession } = useMode();
   const getScenarios = useScenarioEngine();
   const { selectedRole, completedScenarios } = state;
   const isPersonalMode = mode === 'personal';
+  const [isGeneratingScenario, setIsGeneratingScenario] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   if (!selectedRole) {
     navigate(isPersonalMode ? '/setup' : '/role-select');
@@ -43,6 +47,57 @@ export default function Dashboard() {
     : (CHAT_MSGS[selectedRole.id] || []);
   const scenarios = getScenarios();
   const currentScenarioIndex = completedScenarios.length;
+  const maxPersonalStages = 5;
+
+  useEffect(() => {
+    if (!isPersonalMode || isGeneratingScenario) return;
+    if (currentScenarioIndex < scenarios.length) return;
+    if (currentScenarioIndex >= maxPersonalStages) return;
+
+    let cancelled = false;
+    async function hydrateNextScenario() {
+      try {
+        setIsGeneratingScenario(true);
+        setAiError('');
+        const response = await generatePersonalScenario({
+          userContext,
+          history: personalSession?.evaluations || [],
+          stageIndex: currentScenarioIndex
+        });
+        if (cancelled) return;
+        const scenario = response?.scenario;
+        if (!scenario) throw new Error('No scenario returned');
+
+        setPersonalSession(prev => ({
+          ...prev,
+          scenarios: [...(prev?.scenarios || []), scenario]
+        }));
+      } catch (error) {
+        if (!cancelled) {
+          setAiError(error?.message || 'Unable to generate your personalized scenario right now.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsGeneratingScenario(false);
+        }
+      }
+    }
+
+    hydrateNextScenario();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isPersonalMode,
+    isGeneratingScenario,
+    currentScenarioIndex,
+    scenarios.length,
+    userContext,
+    personalSession?.evaluations,
+    setPersonalSession
+  ]);
+
+  const noScenarioReady = isPersonalMode && currentScenarioIndex >= scenarios.length;
 
   return (
     <PageWrapper ambientOrbs={false}>
@@ -62,17 +117,23 @@ export default function Dashboard() {
                     Stage {currentScenarioIndex + 1}: The {scenarios[currentScenarioIndex]?.type || 'Day'}
                   </h1>
                   <p className="text-white/60 font-display text-lg mb-8 max-w-xl">
-                    {scenarios[currentScenarioIndex]?.title || 'Prepare for your next encounter.'}.
-                    Equip your stats and enter the boardroom.
+                    {noScenarioReady
+                      ? 'Generating your next personalized scenario based on your role, company context, and prior decisions.'
+                      : `${scenarios[currentScenarioIndex]?.title || 'Prepare for your next encounter.'}. Equip your stats and enter the boardroom.`}
                   </p>
+
+                  {aiError && (
+                    <p className="text-accent font-display font-bold text-sm mb-4">{aiError}</p>
+                  )}
 
                   <GameButton
                     variant="primary"
                     size="xl"
                     onClick={() => navigate(`/scenario/${currentScenarioIndex}`)}
                     className="w-full sm:w-auto"
+                    disabled={noScenarioReady}
                   >
-                    ENTER STAGE
+                    {noScenarioReady ? (isGeneratingScenario ? 'GENERATING SCENARIO...' : 'PREPARING NEXT STAGE') : 'ENTER STAGE'}
                   </GameButton>
                 </div>
 

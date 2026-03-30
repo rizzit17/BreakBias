@@ -12,14 +12,16 @@ import { Settings } from 'lucide-react';
 
 export default function UserSetup() {
   const navigate = useNavigate();
-  const { setMode, setUserContext } = useMode();
+  const { setMode, setUserContext, resetPersonalSession } = useMode();
   const { user } = useAuth();
   const { dispatch } = useApp();
 
   const [form, setForm] = useState({
     name: user?.displayName || '',
+    gender: 'Prefer not to say',
     role: 'Designer',
     industry: 'Tech',
+    company: '',
     experience: 'Junior'
   });
 
@@ -27,13 +29,14 @@ export default function UserSetup() {
     e.preventDefault();
     setMode('personal');
     setUserContext(form);
+    resetPersonalSession();
 
     dispatch({
       type: 'SELECT_ROLE',
       payload: {
         id: 'personal-user',
         name: form.name,
-        title: `${form.role} - ${form.industry}`,
+        title: `${form.role} - ${form.company || form.industry}`,
         pronoun: 'You',
         color: '#00D4FF',
         gradient: 'linear-gradient(135deg, #00D4FF 0%, #0066CC 100%)',
@@ -80,6 +83,22 @@ export default function UserSetup() {
 
               <div>
                 <label className="block text-xs font-display font-black uppercase tracking-widest text-[#00D4FF] mb-2">
+                  Gender
+                </label>
+                <select
+                  value={form.gender}
+                  onChange={e => setForm({ ...form, gender: e.target.value })}
+                  className="w-full bg-[#151928] border-4 border-[#1f2937] p-4 text-white font-display font-bold rounded-xl focus:outline-none focus:border-[#C5A3FF] transition-colors appearance-none shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]"
+                >
+                  <option>Woman</option>
+                  <option>Man</option>
+                  <option>Non-binary</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-display font-black uppercase tracking-widest text-[#00D4FF] mb-2">
                   Career Role
                 </label>
                 <select 
@@ -110,6 +129,20 @@ export default function UserSetup() {
                   <option>Creative/Agency</option>
                   <option>Education</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-display font-black uppercase tracking-widest text-[#00D4FF] mb-2">
+                  Company
+                </label>
+                <input
+                  type="text"
+                  value={form.company}
+                  onChange={e => setForm({ ...form, company: e.target.value })}
+                  placeholder="e.g. Acme Corp"
+                  className="w-full bg-[#151928] border-4 border-[#1f2937] p-4 text-white font-display font-bold rounded-xl focus:outline-none focus:border-[#C5A3FF] transition-colors shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]"
+                  required
+                />
               </div>
 
               <div>

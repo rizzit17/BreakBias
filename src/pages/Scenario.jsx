@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -13,13 +13,14 @@ import { useApp } from '../context/AppContext';
 import { useScenarioEngine } from '../hooks/useScenarioEngine';
 import { useBiasEngine } from '../hooks/useBiasEngine';
 import { useMode } from '../context/ModeContext';
+import { evaluatePersonalResponse } from '../services/personalModeAI';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 export default function Scenario() {
   const { index } = useParams();
   const navigate = useNavigate();
   const { state } = useApp();
-  const { mode, userContext } = useMode();
+  const { mode, userContext, personalSession, setPersonalSession } = useMode();
   const getScenarios = useScenarioEngine();
   const { selectedRole } = state;
   const { getOutcome, completeScenario } = useBiasEngine();
@@ -33,7 +34,10 @@ export default function Scenario() {
   const [revealed, setRevealed] = useState(false);
   const [feedbacks, setFeedbacks] = useState([]);
   const [personalAction, setPersonalAction] = useState('');
-  const [personalBiasView, setPersonalBiasView] = useState('medium');
+  const [personalOutcome, setPersonalOutcome] = useState(null);
+  const [personalJudgement, setPersonalJudgement] = useState(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   if (!selectedRole || !scenario) {
     navigate(selectedRole ? '/dashboard' : (isPersonalMode ? '/setup' : '/role-select'));
@@ -41,21 +45,17 @@ export default function Scenario() {
   }
 
   const baseOutcome = getOutcome(scenario);
-  const personalBiasMap = { low: 15, medium: 50, high: 85 };
-  const personalOutcome = isPersonalMode ? {
-    ...(baseOutcome || {}),
-    biasLevel: personalBiasMap[personalBiasView],
-    content: personalAction
-      ? `You responded as ${userContext?.name || 'you'}: "${personalAction}". The team reaction showed a ${personalBiasView} level of resistance in this moment.`
-      : baseOutcome?.content,
-    biasType: personalBiasView === 'high' ? 'credit-theft' : (personalBiasView === 'medium' ? 'interruption' : null),
-    biasLabel: personalBiasView === 'high'
-      ? 'High Resistance Encountered'
-      : (personalBiasView === 'medium' ? 'Mixed Support / Pushback' : 'Supportive Interaction')
-  } : baseOutcome;
-  const outcome = personalOutcome;
+  const outcome = isPersonalMode ? (personalOutcome || baseOutcome) : baseOutcome;
   const biasLevel = outcome?.biasLevel || 0;
   const hasBias = biasLevel > 20;
+
+  useEffect(() => {
+    setRevealed(false);
+    setPersonalAction('');
+    setPersonalOutcome(null);
+    setPersonalJudgement(null);
+    setAiError('');
+  }, [scenario?.id]);
 
   function spawnFeedback(text, type, delay = 0) {
     setTimeout(() => {
@@ -66,21 +66,69 @@ export default function Scenario() {
     }, delay);
   }
 
-  function handleReveal() {
+  async function handleReveal() {
     if (isPersonalMode && personalAction.trim().length < 12) return;
+    let resolvedOutcome = isPersonalMode ? (personalOutcome || baseOutcome) : outcome;
+    if (isPersonalMode) {
+      try {
+        setIsEvaluating(true);
+        setAiError('');
+        const result = await evaluatePersonalResponse({
+          userContext,
+          scenario,
+          responseText: personalAction,
+          history: personalSession?.evaluations || []
+        });
+
+        const evaluation = result?.evaluation;
+        if (!evaluation) throw new Error('No evaluation returned');
+
+        const nextOutcome = {
+          content: `You responded: "${personalAction}"\n\n${evaluation.outcomeText}`,
+          biasLevel: evaluation.biasLevel,
+          biasType: evaluation.biasType || scenario.biasMechanism || null,
+          biasLabel: evaluation.biasLabel || 'Scenario Outcome'
+        };
+
+        resolvedOutcome = nextOutcome;
+        setPersonalOutcome(nextOutcome);
+        setPersonalJudgement(evaluation);
+      } catch (error) {
+        setAiError(error?.message || 'AI judgement failed. Please retry.');
+      } finally {
+        setIsEvaluating(false);
+      }
+    }
+
+    const resolvedBiasLevel = resolvedOutcome?.biasLevel ?? (isPersonalMode ? 40 : biasLevel);
     setRevealed(true);
-    
-    // Spawn game-like floaty text
-    if (hasBias) {
-      spawnFeedback(`${biasLevel} BIAS DMG`, 'negative');
-      spawnFeedback(`CONF XP LOST`, 'negative', 400);
+
+    if (resolvedBiasLevel > 20) {
+      spawnFeedback(`${resolvedBiasLevel} BIAS DMG`, 'negative');
+      spawnFeedback('CONF XP LOST', 'negative', 400);
     } else {
-      spawnFeedback(`XP GAINED`, 'positive');
+      spawnFeedback('XP GAINED', 'positive');
     }
   }
 
   function handleComplete() {
-    completeScenario(scenario.id, isPersonalMode ? personalOutcome : null);
+    if (isPersonalMode) {
+      setPersonalSession(prev => ({
+        ...prev,
+        evaluations: [
+          ...(prev?.evaluations || []),
+          {
+            scenarioId: scenario.id,
+            responseText: personalAction,
+            judgement: personalJudgement,
+            outcome: personalOutcome,
+            createdAt: Date.now()
+          }
+        ]
+      }));
+    }
+
+    completeScenario(scenario.id, isPersonalMode ? (personalOutcome || baseOutcome) : null);
     const isLast = scenarioIndex >= totalScenarios - 1;
     setTimeout(() => {
       if (isLast) navigate('/summary');
@@ -152,29 +200,10 @@ export default function Scenario() {
                   className="w-full min-h-[96px] bg-[#0B0F1A] border-2 border-white/10 rounded-lg p-3 text-sm text-white/90 font-display focus:outline-none focus:border-cyan/50"
                 />
                 <div className="mt-3">
-                  <div className="text-[11px] font-display font-black uppercase tracking-widest text-white/50 mb-2">
-                    How did the team react?
+                  <div className="text-[11px] font-display font-black uppercase tracking-widest text-white/50">
+                    AI will evaluate your response for clarity, assertiveness, boundary-setting, and bias exposure risk.
                   </div>
-                  <div className="flex gap-2">
-                    {[
-                      { id: 'low', label: 'Supportive' },
-                      { id: 'medium', label: 'Mixed' },
-                      { id: 'high', label: 'Biased' }
-                    ].map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => setPersonalBiasView(option.id)}
-                        className={`px-3 py-1.5 rounded-md border text-xs font-display font-bold uppercase tracking-wider transition-colors ${
-                          personalBiasView === option.id
-                            ? 'border-cyan text-cyan bg-cyan/10'
-                            : 'border-white/15 text-white/60 hover:text-white'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+                  {aiError && <div className="text-xs text-accent font-display font-bold mt-2">{aiError}</div>}
                 </div>
               </GameCard>
             </motion.div>
@@ -193,6 +222,28 @@ export default function Scenario() {
                       {outcome.content}
                     </div>
                   )}
+
+                  {isPersonalMode && personalJudgement?.judgement && (
+                    <div className="mt-4 p-5 bg-[#0B0F1A] border-2 border-cyan/20 rounded-xl">
+                      <div className="text-xs font-display font-black uppercase tracking-widest text-cyan mb-3">
+                        AI Judgement
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 text-sm font-display font-bold text-white/80">
+                        <div>Communication: {personalJudgement.judgement.communication}/100</div>
+                        <div>Assertiveness: {personalJudgement.judgement.assertiveness}/100</div>
+                        <div>Boundary Setting: {personalJudgement.judgement.boundarySetting}/100</div>
+                        <div>Clarity: {personalJudgement.judgement.clarity}/100</div>
+                        <div>Bias Exposure Risk: {personalJudgement.judgement.biasExposureRisk}/100</div>
+                      </div>
+                      {Array.isArray(personalJudgement?.suggestions) && personalJudgement.suggestions.length > 0 && (
+                        <div className="mt-3 text-xs font-display text-white/70">
+                          {personalJudgement.suggestions.map((item, idx) => (
+                            <div key={idx}>- {item}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -206,9 +257,9 @@ export default function Scenario() {
                       size="xl"
                       onClick={handleReveal}
                       className="px-16 animate-pulse"
-                      disabled={isPersonalMode && personalAction.trim().length < 12}
+                      disabled={isEvaluating || (isPersonalMode && personalAction.trim().length < 12)}
                     >
-                      EXECUTE ACTION
+                      {isEvaluating ? 'EVALUATING WITH AI...' : 'EXECUTE ACTION'}
                     </GameButton>
                   </motion.div>
                 ) : (

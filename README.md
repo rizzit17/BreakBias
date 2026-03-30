@@ -4,7 +4,7 @@ BreakBias is an interactive web app that demonstrates how workplace bias changes
 
 Users can run:
 - `Simulation Mode`: prebuilt scenarios for quick demo/testing.
-- `Personal Mode`: Google login + profile setup + personalized scenarios where users respond in their own words.
+- `Personal Mode`: Google login + profile setup (including gender/company) + AI-personalized scenarios and response judgement.
 
 ## Why This Project
 
@@ -15,7 +15,9 @@ Instead of abstract theory, it uses realistic day-to-day moments (meeting, email
 
 - Dual mode experience: `Simulation` and `Personal`.
 - Scenario engine with stage-based progression.
-- Personal profile flow (`name`, `role`, `industry`, `experience`).
+- AI-generated personal scenarios in Personal Mode only.
+- AI judgement rubric for personal responses (communication, assertiveness, clarity, boundary-setting, risk).
+- Personal profile flow (`name`, `gender`, `role`, `industry`, `company`, `experience`).
 - Bias impact feedback and session stats.
 - Comparison/intervention modules for simulation path.
 - Responsive React UI with animated transitions.
@@ -28,6 +30,7 @@ Instead of abstract theory, it uses realistic day-to-day moments (meeting, email
 - Framer Motion
 - React Router
 - Firebase Auth (Google)
+- Vercel Serverless Functions (`api/personal-ai`) for AI generation and evaluation
 
 ## Project Structure
 
@@ -97,6 +100,21 @@ Typical deploy flow:
 npm run build
 firebase deploy
 ```
+
+## AI Setup (Personal Mode)
+
+The Personal Mode AI endpoint lives at:
+
+```text
+api/personal-ai.js
+```
+
+Set these environment variables in Vercel:
+
+- `GEMINI_API_KEY` (required for live AI responses)
+- `GEMINI_MODEL` (optional, default is `gemini-2.0-flash`)
+
+If `GEMINI_API_KEY` is missing or AI call fails, the app falls back to local deterministic scenario/evaluation logic so Personal Mode still works.
 
 ## Scripts
 

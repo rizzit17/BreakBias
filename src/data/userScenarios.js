@@ -4,6 +4,8 @@ export function generateUserScenario(userContext) {
     role = 'Employee',
     industry = 'Corporate',
     experience = 'Junior',
+    company = 'your company',
+    gender = 'person',
     name = 'Player'
   } = userContext;
 
@@ -13,8 +15,8 @@ export function generateUserScenario(userContext) {
       title: `${industry} Strategy Sync`,
       time: "9:00 AM",
       type: "meeting",
-      description: `You are presenting a new strategy for your team. You have been a ${experience} ${role} here for a while. Enter what you would actually say in this moment.`,
-      personalPrompt: `What would you say in the meeting to protect your idea and make your contribution visible, ${name}?`,
+      description: `You are presenting a new strategy for your team at ${company}. You are a ${experience} ${role} and identify as ${gender}. Enter what you would actually say in this moment.`,
+      personalPrompt: `What would you say in this meeting at ${company} to protect your idea and make your contribution visible, ${name}?`,
       biasMechanism: "Interruption & Credit Erosion",
       biasTypes: ["Interruption", "Idea Appropriation"],
       outcomes: {
@@ -30,7 +32,7 @@ export function generateUserScenario(userContext) {
       title: `${role} Client Feedback`,
       time: "1:30 PM",
       type: "email",
-      description: `Following up on the morning sync over email regarding the shift in ${industry} deliverables. Write the response you would send.`,
+      description: `Following up on the morning sync over email regarding the shift in ${industry} deliverables at ${company}. Write the response you would send.`,
       personalPrompt: `Draft your email response. How do you set boundaries and ask for fair ownership of work?`,
       biasMechanism: "Opportunity Denial",
       biasTypes: ["Gatekeeping", "Micro-Aggression"],
@@ -47,7 +49,7 @@ export function generateUserScenario(userContext) {
       title: `${industry} Team Thread`,
       time: "4:15 PM",
       type: "chat",
-      description: `A fast moving team chat is deciding scope and ownership. Respond in your own words.`,
+      description: `A fast moving team chat at ${company} is deciding scope and ownership. Respond in your own words.`,
       personalPrompt: `Type the message you would post to keep decisions transparent and reduce credit theft.`,
       biasMechanism: "Visibility Loss in Fast Channels",
       biasTypes: ["Invisibility", "Credit Theft"],
