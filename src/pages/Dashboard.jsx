@@ -10,6 +10,7 @@ import { useApp } from '../context/AppContext';
 import { useScenarioEngine } from '../hooks/useScenarioEngine';
 import { useMode } from '../context/ModeContext';
 import { generatePersonalScenario } from '../services/personalModeAI';
+import { generateUserScenario } from '../data/userScenarios';
 import { Mail, MessageSquare, MapPin } from 'lucide-react';
 
 const EMAIL_PREVIEWS = {
@@ -77,9 +78,10 @@ export default function Dashboard() {
           setAiError(error?.message || 'Unable to generate your personalized scenario right now.');
         }
       } finally {
-        if (!cancelled) {
-          setIsGeneratingScenario(false);
-        }
+        // Always release loading flag.
+        // In React StrictMode, cleanup can run before async completion; gating this on
+        // `cancelled` can leave the UI permanently stuck in "Generating scenario...".
+        setIsGeneratingScenario(false);
       }
     }
 
@@ -98,6 +100,7 @@ export default function Dashboard() {
   ]);
 
   const noScenarioReady = isPersonalMode && currentScenarioIndex >= scenarios.length;
+  const showFallbackAction = isPersonalMode && noScenarioReady && !isGeneratingScenario;
 
   return (
     <PageWrapper ambientOrbs={false}>
@@ -135,6 +138,23 @@ export default function Dashboard() {
                   >
                     {noScenarioReady ? (isGeneratingScenario ? 'GENERATING SCENARIO...' : 'PREPARING NEXT STAGE') : 'ENTER STAGE'}
                   </GameButton>
+
+                  {showFallbackAction && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const localScenario = generateUserScenario(userContext)[currentScenarioIndex % 3];
+                        setPersonalSession(prev => ({
+                          ...prev,
+                          scenarios: [...(prev?.scenarios || []), localScenario]
+                        }));
+                        setAiError('');
+                      }}
+                      className="block mt-4 text-xs font-display font-bold text-cyan underline underline-offset-4"
+                    >
+                      USE OFFLINE FALLBACK SCENARIO
+                    </button>
+                  )}
                 </div>
 
                 <div className="absolute right-0 bottom-0 opacity-30 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 transition-transform">
