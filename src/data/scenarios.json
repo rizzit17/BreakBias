@@ -1,0 +1,249 @@
+{
+  "roles": [
+    {
+      "id": "male-manager",
+      "name": "Alex Chen",
+      "title": "Senior Product Manager",
+      "pronoun": "He/Him",
+      "avatar": "male",
+      "color": "#00D4FF",
+      "gradient": "linear-gradient(135deg, #00D4FF 0%, #0066CC 100%)",
+      "bgClass": "bg-identity-male",
+      "description": "Confident, credited, visible. His ideas are heard, his authority unquestioned.",
+      "locked": false
+    },
+    {
+      "id": "female-employee",
+      "name": "Sarah Chen",
+      "title": "Senior Product Manager",
+      "pronoun": "She/Her",
+      "avatar": "female",
+      "color": "#FF6B9D",
+      "gradient": "linear-gradient(135deg, #FF6B9D 0%, #FF4D6D 100%)",
+      "bgClass": "bg-identity-female",
+      "description": "Same role. Same skills. Interrupted, overlooked, and doubted every step of the way.",
+      "locked": false
+    },
+    {
+      "id": "intern",
+      "name": "Jamie",
+      "title": "Product Intern",
+      "pronoun": "They/Them",
+      "avatar": "intern",
+      "color": "#C5A3FF",
+      "gradient": "linear-gradient(135deg, #C5A3FF 0%, #9B59B6 100%)",
+      "bgClass": "bg-identity-intern",
+      "description": "Invisible, underestimated, and routinely ignored. The ideas still come. The credit doesn't.",
+      "locked": true
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "morning-meeting",
+      "type": "meeting",
+      "title": "The Strategy Meeting",
+      "time": "9:00 AM",
+      "phase": "morning",
+      "description": "The quarterly product strategy meeting. Everyone is presenting their roadmap ideas.",
+      "identityOutcomes": {
+        "male-manager": {
+          "content": "You present the Q3 roadmap. The room is attentive. When you finish, Mark says, 'Solid thinking, Alex. Let's move forward with your vision.' Three heads nod in agreement.",
+          "reaction": "praised",
+          "biasLevel": 0,
+          "emotionalScore": 85,
+          "quote": "Solid thinking. Let's move forward with your vision.",
+          "speakerName": "Mark (Director)",
+          "interruptions": 0,
+          "creditGiven": true
+        },
+        "female-employee": {
+          "content": "You begin presenting the Q3 roadmap. Halfway through your second slide, David cuts in — 'Actually, what Sarah is trying to say is...' and rephrases your exact idea. The room listens to him instead.",
+          "reaction": "interrupted",
+          "biasLevel": 85,
+          "emotionalScore": 30,
+          "quote": "Actually, what Sarah is trying to say is...",
+          "speakerName": "David (Peer)",
+          "interruptions": 3,
+          "creditGiven": false,
+          "biasType": "mansplaining",
+          "biasLabel": "Interrupted & Paraphrased"
+        },
+        "intern": {
+          "content": "You raise your hand to contribute a key insight. Mark glances at you briefly, then looks back at his laptop. Your point goes unacknowledged. Ten minutes later, David says the same thing — to applause.",
+          "reaction": "ignored",
+          "biasLevel": 95,
+          "emotionalScore": 15,
+          "quote": "Good point, David.",
+          "speakerName": "Mark (Director)",
+          "interruptions": 0,
+          "creditGiven": false,
+          "biasType": "invisibility",
+          "biasLabel": "Completely Ignored"
+        }
+      }
+    },
+    {
+      "id": "feedback-email",
+      "type": "email",
+      "title": "Performance Feedback Email",
+      "time": "10:30 AM",
+      "phase": "morning",
+      "description": "Your manager sends you your quarterly performance review via email.",
+      "identityOutcomes": {
+        "male-manager": {
+          "subject": "Q3 Review — Exceptional Performance",
+          "from": "director@company.com",
+          "fromName": "Mark Director",
+          "body": "Alex,\n\nYour leadership during the Q3 launch was remarkable. Your decisive thinking and ability to align the team made all the difference. I'm recommending you for the Senior Director track.\n\nLet's grab coffee to discuss your growth path.\n\nBest,\nMark",
+          "tone": "positive",
+          "biasLevel": 0,
+          "keywords": ["leadership", "decisive", "remarkable"]
+        },
+        "female-employee": {
+          "subject": "Q3 Review — Performance Notes",
+          "from": "director@company.com",
+          "fromName": "Mark Director",
+          "body": "Sarah,\n\nYou did well this quarter. A few things to keep in mind — the team responds better when you're less assertive in meetings. Perhaps soften your communication style. Your emotional responses during the retrospective were noted.\n\nHappy to chat if you have questions.\n\nMark",
+          "tone": "mixed",
+          "biasLevel": 90,
+          "keywords": ["assertive", "emotional", "soften"],
+          "biasType": "gendered-language",
+          "biasLabel": "Penalized for 'Assertiveness'"
+        },
+        "intern": {
+          "subject": "Internship Check-In",
+          "from": "hr@company.com",
+          "fromName": "HR Team",
+          "body": "Hi Jamie,\n\nJust a routine check-in. How are you settling in? Let us know if you need anything.\n\nHope you're enjoying the experience!\n\nHR",
+          "tone": "dismissive",
+          "biasLevel": 75,
+          "keywords": ["routine", "hope", "experience"],
+          "biasType": "invisibility",
+          "biasLabel": "Routed to HR, Not Manager"
+        }
+      }
+    },
+    {
+      "id": "slack-chat",
+      "type": "chat",
+      "title": "Team Slack Thread",
+      "time": "12:00 PM",
+      "phase": "midday",
+      "description": "A team Slack discussion breaks out about a critical product decision.",
+      "identityOutcomes": {
+        "male-manager": {
+          "messages": [
+            { "sender": "You", "text": "I think we should delay the launch by two weeks for QA.", "isSelf": true },
+            { "sender": "Emily", "text": "That makes total sense. Better to ship right than ship fast." },
+            { "sender": "David", "text": "Agreed. Alex always thinks ahead. +1 on the delay." },
+            { "sender": "Mark", "text": "Locking it in. Two week delay. Thanks for catching this, Alex." }
+          ],
+          "biasLevel": 0,
+          "outcome": "Decision implemented immediately"
+        },
+        "female-employee": {
+          "messages": [
+            { "sender": "You", "text": "I think we should delay the launch by two weeks for QA.", "isSelf": true },
+            { "sender": "David", "text": "Hmm, not sure. We have stakeholder pressure." },
+            { "sender": "Emily", "text": "I see both sides..." },
+            { "sender": "David", "text": "Actually, I've been thinking — what if we delay launch by two weeks for QA? Just to make sure we ship quality." },
+            { "sender": "Mark", "text": "That's smart David. Let's do it. Great call." }
+          ],
+          "biasLevel": 95,
+          "outcome": "Idea stolen, credit given to male colleague",
+          "biasType": "credit-theft",
+          "biasLabel": "Idea Stolen in Real Time"
+        },
+        "intern": {
+          "messages": [
+            { "sender": "You", "text": "Should we consider a two-week QA delay?", "isSelf": true },
+            { "sender": "David", "text": "Hmm." },
+            { "sender": "Emily", "text": "Anyone else have thoughts?" },
+            { "sender": "Mark", "text": "Good discussion everyone. Let's table this for now." }
+          ],
+          "biasLevel": 80,
+          "outcome": "Suggestion completely ignored",
+          "biasType": "invisibility",
+          "biasLabel": "Message Ignored"
+        }
+      }
+    },
+    {
+      "id": "promotion-talk",
+      "type": "meeting",
+      "title": "Promotion Conversation",
+      "time": "3:00 PM",
+      "phase": "afternoon",
+      "description": "A one-on-one with your manager about career advancement.",
+      "identityOutcomes": {
+        "male-manager": {
+          "content": "Mark leans forward. 'Alex, we've been watching your trajectory. The VP slot is opening up. I want to nominate you — you have the presence and potential.' He hands you a Leadership Development roadmap.",
+          "reaction": "promoted",
+          "biasLevel": 0,
+          "emotionalScore": 95,
+          "quote": "You have the presence and the potential.",
+          "speakerName": "Mark (Director)"
+        },
+        "female-employee": {
+          "content": "Mark smiles warmly. 'Sarah, you've been doing great. Maybe in a few years when you're ready...' You ask about the VP opening. 'We need someone who can really command the room, you know? But keep growing!' The conversation ends before you can respond.",
+          "reaction": "deflected",
+          "biasLevel": 88,
+          "emotionalScore": 25,
+          "quote": "Maybe in a few years when you're ready...",
+          "speakerName": "Mark (Director)",
+          "biasType": "glass-ceiling",
+          "biasLabel": "Promotion Deferred Indefinitely"
+        },
+        "intern": {
+          "content": "You requested a 1:1 with Mark two weeks ago. His assistant finally responds: 'Mark's calendar is fully booked. Could you speak to your supervisor instead?' Your direct message to Mark goes unread for 6 days.",
+          "reaction": "ignored",
+          "biasLevel": 100,
+          "emotionalScore": 10,
+          "quote": "Mark's calendar is fully booked.",
+          "speakerName": "Executive Assistant",
+          "biasType": "access-denial",
+          "biasLabel": "Meeting Request Denied"
+        }
+      }
+    }
+  ],
+  "biasTypes": {
+    "mansplaining": { "label": "Mansplaining", "color": "#FF4D6D", "icon": "speech" },
+    "interruption": { "label": "Interruption", "color": "#FF6B9D", "icon": "zap" },
+    "credit-theft": { "label": "Credit Theft", "color": "#FF4D6D", "icon": "copy" },
+    "invisibility": { "label": "Invisibility", "color": "#9B59B6", "icon": "eye-off" },
+    "gendered-language": { "label": "Gendered Language", "color": "#FF6B9D", "icon": "message" },
+    "glass-ceiling": { "label": "Glass Ceiling", "color": "#C5A3FF", "icon": "bar-chart" },
+    "access-denial": { "label": "Access Denial", "color": "#9B59B6", "icon": "lock" }
+  },
+  "interventions": [
+    {
+      "id": "structured-agenda",
+      "title": "Structured Meeting Agendas",
+      "description": "All participants are given equal time slots on the agenda. Interruptions are tracked.",
+      "impact": "Reduces interruption bias by 67%",
+      "icon": "calendar"
+    },
+    {
+      "id": "blind-authorship",
+      "title": "Blind Credit Attribution",
+      "description": "Ideas are recorded with timestamps and author tags before meetings to ensure proper credit.",
+      "impact": "Reduces credit theft by 78%",
+      "icon": "shield"
+    },
+    {
+      "id": "inclusive-language",
+      "title": "Inclusive Language Policy",
+      "description": "Feedback templates replace gendered language. Words like 'assertive' and 'emotional' are flagged.",
+      "impact": "Reduces gendered language in reviews by 82%",
+      "icon": "check-circle"
+    },
+    {
+      "id": "sponsor-program",
+      "title": "Sponsorship Program",
+      "description": "Representatives from underrepresented groups are actively sponsored for advancement opportunities.",
+      "impact": "Increases promotion equity by 45%",
+      "icon": "users"
+    }
+  ]
+}
