@@ -48,12 +48,10 @@ export default function Dashboard() {
     : (CHAT_MSGS[selectedRole.id] || []);
   const scenarios = getScenarios();
   const currentScenarioIndex = completedScenarios.length;
-  const maxPersonalStages = 5;
 
   useEffect(() => {
     if (!isPersonalMode || isGeneratingScenario) return;
     if (currentScenarioIndex < scenarios.length) return;
-    if (currentScenarioIndex >= maxPersonalStages) return;
 
     let cancelled = false;
     async function hydrateNextScenario() {
@@ -142,7 +140,8 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => {
-                        const localScenario = generateUserScenario(userContext)[currentScenarioIndex % 3];
+                        const fallbackPool = generateUserScenario(userContext);
+                        const localScenario = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
                         setPersonalSession(prev => ({
                           ...prev,
                           scenarios: [...(prev?.scenarios || []), localScenario]

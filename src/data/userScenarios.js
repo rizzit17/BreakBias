@@ -1,5 +1,8 @@
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export function generateUserScenario(userContext) {
-  // A template factory for dynamic scenarios based on User's background
   const {
     role = 'Employee',
     industry = 'Corporate',
@@ -9,57 +12,85 @@ export function generateUserScenario(userContext) {
     name = 'Player'
   } = userContext;
 
-  return [
-    {
-      id: "personal_meeting_01",
-      title: `${industry} Strategy Sync`,
-      time: "9:00 AM",
-      type: "meeting",
-      description: `You are presenting a new strategy for your team at ${company}. You are a ${experience} ${role} and identify as ${gender}. Enter what you would actually say in this moment.`,
-      personalPrompt: `What would you say in this meeting at ${company} to protect your idea and make your contribution visible, ${name}?`,
-      biasMechanism: "Interruption & Credit Erosion",
-      biasTypes: ["Interruption", "Idea Appropriation"],
-      outcomes: {
-        "personal-user": {
-          content: `You present your strategy and advocate for ownership of your ideas in front of the team.`,
-          biasLevel: 35,
-          emotionModifier: -5
-        }
-      }
-    },
-    {
-      id: "personal_email_02",
-      title: `${role} Client Feedback`,
-      time: "1:30 PM",
-      type: "email",
-      description: `Following up on the morning sync over email regarding the shift in ${industry} deliverables at ${company}. Write the response you would send.`,
-      personalPrompt: `Draft your email response. How do you set boundaries and ask for fair ownership of work?`,
-      biasMechanism: "Opportunity Denial",
-      biasTypes: ["Gatekeeping", "Micro-Aggression"],
-      outcomes: {
-        "personal-user": {
-          content: `You receive a follow-up that may shift ownership away from you and must respond strategically.`,
-          biasLevel: 40,
-          emotionModifier: -8
-        }
-      }
-    },
-    {
-      id: "personal_chat_03",
-      title: `${industry} Team Thread`,
-      time: "4:15 PM",
-      type: "chat",
-      description: `A fast moving team chat at ${company} is deciding scope and ownership. Respond in your own words.`,
-      personalPrompt: `Type the message you would post to keep decisions transparent and reduce credit theft.`,
-      biasMechanism: "Visibility Loss in Fast Channels",
-      biasTypes: ["Invisibility", "Credit Theft"],
-      outcomes: {
-        "personal-user": {
-          content: `You enter the thread with a documented action plan and request explicit owner attribution.`,
-          biasLevel: 30,
-          emotionModifier: 5
-        }
-      }
-    }
+  const meetingContexts = [
+    'quarterly planning review',
+    'cross-functional roadmap sync',
+    'stakeholder escalation room',
+    'product launch readiness review',
+    'budget alignment meeting',
+    'performance calibration circle'
   ];
+
+  const emailContexts = [
+    'ownership reassignment thread',
+    'promotion feedback follow-up',
+    'client update escalation',
+    'performance narrative summary',
+    'decision log recap',
+    'priority change announcement'
+  ];
+
+  const chatContexts = [
+    'incident-response channel debate',
+    'launch-room real-time thread',
+    'team delivery planning chat',
+    'cross-team dependency thread',
+    'project-risk discussion channel',
+    'deadline negotiation chat'
+  ];
+
+  const biasMechanisms = [
+    'Interruption & Credit Erosion',
+    'Opportunity Deflection',
+    'Visibility Suppression',
+    'Role Stereotyping',
+    'Authority Doubt',
+    'Attribution Drift'
+  ];
+
+  const suggestions = [
+    'ask for explicit owner assignment',
+    'document the decision and timeline',
+    'summarize your contribution in writing',
+    'name the tradeoff and recommendation clearly',
+    'request alignment in front of decision-makers'
+  ];
+
+  const makeScenario = (type, i) => {
+    const contextText =
+      type === 'meeting'
+        ? pick(meetingContexts)
+        : type === 'email'
+          ? pick(emailContexts)
+          : pick(chatContexts);
+
+    const promptAction = pick(suggestions);
+    const mechanism = pick(biasMechanisms);
+    const titlePrefix = type === 'meeting' ? 'Live Room' : type === 'email' ? 'Mail Trail' : 'Team Thread';
+
+    return {
+      id: `personal_${type}_${Date.now()}_${i}_${Math.floor(Math.random() * 10000)}`,
+      title: `${titlePrefix}: ${industry} ${contextText}`,
+      time: pick(['9:00 AM', '10:45 AM', '1:15 PM', '3:20 PM', '4:40 PM']),
+      type,
+      description: `At ${company}, you are a ${experience} ${role} (${gender}) navigating a ${contextText}. Respond in your own voice as ${name}.`,
+      personalPrompt:
+        type === 'meeting'
+          ? `What do you say in the meeting to protect ownership and momentum? Try to ${promptAction}.`
+          : type === 'email'
+            ? `Write a concise email response. Focus on fairness and next steps, and ${promptAction}.`
+            : `Type your exact chat message for the team channel. Keep it clear, practical, and ${promptAction}.`,
+      biasMechanism: mechanism,
+      biasTypes: ['Interruption', 'Credit Theft', 'Invisibility'],
+      outcomes: {
+        'personal-user': {
+          content: 'Your response is evaluated in the context of workplace dynamics and decision power.',
+          biasLevel: pick([28, 35, 42, 50, 58])
+        }
+      }
+    };
+  };
+
+  const orderedTypes = ['meeting', 'email', 'chat', 'meeting', 'chat', 'email'];
+  return orderedTypes.map((type, i) => makeScenario(type, i));
 }

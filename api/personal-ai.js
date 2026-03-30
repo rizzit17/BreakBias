@@ -7,26 +7,54 @@ function sanitize(value, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function fallbackScenario(userContext, stageIndex = 0) {
   const role = sanitize(userContext?.role, 'Professional');
   const industry = sanitize(userContext?.industry, 'workplace');
   const company = sanitize(userContext?.company, 'your company');
   const experience = sanitize(userContext?.experience, 'Mid-Level');
-  const stages = ['meeting', 'email', 'chat'];
-  const type = stages[stageIndex % stages.length];
+  const gender = sanitize(userContext?.gender, 'Not specified');
+  const type = pick(['meeting', 'email', 'chat']);
+  const contextsByType = {
+    meeting: [
+      'budget prioritization conflict',
+      'roadmap ownership review',
+      'cross-team escalation sync',
+      'promotion calibration session',
+      'launch readiness sign-off'
+    ],
+    email: [
+      'credit attribution follow-up',
+      'role scope renegotiation',
+      'performance feedback loop',
+      'ownership reassignment chain',
+      'deadline-risk escalation'
+    ],
+    chat: [
+      'incident response channel',
+      'delivery blockers thread',
+      'launch go/no-go discussion',
+      'dependency handoff debate',
+      'decision log clarification'
+    ]
+  };
+  const scenarioContext = pick(contextsByType[type]);
 
   return {
     id: `personal_ai_${Date.now()}`,
     type,
-    title: `${industry} ${type === 'meeting' ? 'Decision Review' : type === 'email' ? 'Escalation Thread' : 'Team Channel Debate'}`,
+    title: `${industry} ${type === 'meeting' ? 'Decision Room' : type === 'email' ? 'Escalation Mail' : 'Team Thread'}: ${scenarioContext}`,
     time: ['9:30 AM', '1:10 PM', '4:05 PM'][stageIndex % 3],
-    description: `You are a ${experience} ${role} at ${company}. This situation is tailored to your context.`,
+    description: `You are a ${experience} ${role} (${gender}) at ${company}. This situation is tailored to your context: ${scenarioContext}.`,
     personalPrompt:
       type === 'meeting'
-        ? 'What do you say to protect ownership of your contribution while staying collaborative?'
+        ? 'What do you say to protect ownership while staying collaborative and decisive?'
         : type === 'email'
-          ? 'Draft a short reply that sets boundaries and requests fair attribution.'
-          : 'Type your exact message to keep the discussion fair and clear.',
+          ? 'Draft a concise reply that sets boundaries, names ownership, and requests fair attribution.'
+          : 'Type your exact message to keep discussion fair, clear, and action-oriented.',
     biasMechanism: 'Attribution Drift',
     biasTypes: ['Interruption', 'Credit Theft'],
     outcomes: {
@@ -135,6 +163,7 @@ async function handleGenerate(req, res, payload) {
 
   const systemPrompt = 'You generate realistic workplace scenarios about fairness and bias. Keep it respectful and practical.';
   const schemaHint = `Return strict JSON with keys: id,type,title,time,description,personalPrompt,biasMechanism,biasTypes,outcomes where outcomes has key "personal-user" with content,biasLevel.`;
+  const recentTitles = history.slice(-5).map(h => h?.scenarioTitle || h?.title || h?.scenarioId || '').filter(Boolean);
   const userPrompt = `Profile:
 name=${sanitize(userContext.name, 'User')}
 gender=${sanitize(userContext.gender, 'Not specified')}
@@ -143,8 +172,12 @@ industry=${sanitize(userContext.industry, 'General')}
 company=${sanitize(userContext.company, 'Company')}
 experience=${sanitize(userContext.experience, 'Mid-Level')}
 stageIndex=${stageIndex}
+randomSeed=${Math.floor(Math.random() * 1000000)}
 recentHistory=${JSON.stringify(history.slice(-3))}
-Create one scenario only. Type must be one of meeting,email,chat.`;
+recentTitlesToAvoid=${JSON.stringify(recentTitles)}
+Create one scenario only. Type must be one of meeting,email,chat.
+Do NOT repeat scenario context, title pattern, or conflict from recentTitlesToAvoid.
+Personalize to role, company, and experience level with concrete workplace detail.`;
 
   const ai = await callGemini(systemPrompt, userPrompt, schemaHint);
   if (!ai || !ai.type || !ai.title) {

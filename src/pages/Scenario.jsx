@@ -119,6 +119,8 @@ export default function Scenario() {
           ...(prev?.evaluations || []),
           {
             scenarioId: scenario.id,
+            scenarioTitle: scenario.title,
+            scenarioType: scenario.type,
             responseText: personalAction,
             judgement: personalJudgement,
             outcome: personalOutcome,
