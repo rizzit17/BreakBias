@@ -91,7 +91,6 @@ export default function Dashboard() {
     };
   }, [
     isPersonalMode,
-    isGeneratingScenario,
     currentScenarioIndex,
     scenarios.length,
     userContext,
