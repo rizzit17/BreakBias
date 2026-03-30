@@ -1,7 +1,8 @@
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Trophy, ChevronRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useAudio } from '../context/AudioContext';
 
 /* ─── Pixel / Roblox-style border utility ─────────────────────────── */
 const pixelBorder = {
@@ -96,6 +97,7 @@ function FloatingBadge({ icon, title, sub, delay, color = '#a855f7' }) {
 /* ─── Main Landing ─────────────────────────────────────────────────── */
 export default function Landing() {
   const navigate = useNavigate();
+  const { playSound, primeAudio } = useAudio();
   const [hovered, setHovered] = useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -272,9 +274,17 @@ export default function Landing() {
             }}
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.95 }}
-            onHoverStart={() => setHovered(true)}
+            onHoverStart={() => {
+              primeAudio();
+              playSound('hover');
+              setHovered(true);
+            }}
             onHoverEnd={() => setHovered(false)}
-            onClick={() => navigate('/mode-select')}
+            onClick={() => {
+              primeAudio();
+              playSound('click');
+              navigate('/mode-select');
+            }}
           >
             {/* Pulse ring */}
             <div

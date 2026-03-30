@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Hexagon, Maximize2 } from 'lucide-react';
+import { ShieldCheck, Hexagon, Maximize2, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAudio } from '../../context/AudioContext';
 import ProgressBar from '../ui/ProgressBar';
 import roleplaydLogo from '../../assets/roleplayd.png';
 import scenariosData from '../../data/scenarios.json';
@@ -10,6 +11,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { state } = useApp();
+  const { muted, toggleMuted, playSound, primeAudio } = useAudio();
   
   if (pathname === '/') return null;
 
@@ -27,7 +29,14 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Left: Player ID */}
-        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer min-w-0" onClick={() => navigate('/dashboard')}>
+        <div
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer min-w-0"
+          onClick={() => {
+            primeAudio();
+            playSound('click');
+            navigate('/dashboard');
+          }}
+        >
           <img
             src={roleplaydLogo}
             alt="RolePlayd logo"
@@ -68,6 +77,23 @@ export default function Navbar() {
             <ShieldCheck size={14} className={activeInterventions.length > 0 ? "text-cyan drop-shadow-[0_0_5px_#00D4FF]" : "text-white/20"} />
             <span className="hidden sm:inline text-xs font-display font-bold text-white/50">{activeInterventions.length}/{totalInterventions} Mods</span>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              primeAudio();
+              if (muted) {
+                toggleMuted();
+              } else {
+                playSound('toggle-off');
+                toggleMuted();
+              }
+            }}
+            className="w-8 h-8 rounded-lg bg-card-dark border-[2px] border-white/5 flex items-center justify-center text-white/40 hover:text-white transition-colors"
+            aria-label={muted ? 'Enable sound' : 'Mute sound'}
+            title={muted ? 'Enable sound' : 'Mute sound'}
+          >
+            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
           <button className="hidden sm:flex w-8 h-8 rounded-lg bg-card-dark border-[2px] border-white/5 items-center justify-center text-white/30 hover:text-white transition-colors">
             <Maximize2 size={14} />
           </button>

@@ -10,6 +10,7 @@ import GameCard from '../components/ui/GameCard';
 import GameButton from '../components/ui/GameButton';
 import FloatingFeedback from '../components/effects/FloatingFeedback';
 import { useApp } from '../context/AppContext';
+import { useAudio } from '../context/AudioContext';
 import { useScenarioEngine } from '../hooks/useScenarioEngine';
 import { useBiasEngine } from '../hooks/useBiasEngine';
 import { useMode } from '../context/ModeContext';
@@ -20,6 +21,7 @@ export default function Scenario() {
   const { index } = useParams();
   const navigate = useNavigate();
   const { state } = useApp();
+  const { playSound, primeAudio } = useAudio();
   const { mode, userContext, personalSession, setPersonalSession } = useMode();
   const getScenarios = useScenarioEngine();
   const { selectedRole } = state;
@@ -73,6 +75,7 @@ export default function Scenario() {
       try {
         setIsEvaluating(true);
         setAiError('');
+        playSound('ai');
         const result = await evaluatePersonalResponse({
           userContext,
           scenario,
@@ -104,9 +107,11 @@ export default function Scenario() {
     setRevealed(true);
 
     if (resolvedBiasLevel > 20) {
+      playSound('warning');
       spawnFeedback(`${resolvedBiasLevel} BIAS DMG`, 'negative');
       spawnFeedback('CONF XP LOST', 'negative', 400);
     } else {
+      playSound('success');
       spawnFeedback('XP GAINED', 'positive');
     }
   }
@@ -131,6 +136,7 @@ export default function Scenario() {
     }
 
     completeScenario(scenario.id, isPersonalMode ? (personalOutcome || baseOutcome) : null);
+    playSound(scenarioIndex >= totalScenarios - 1 ? 'complete' : 'route');
     const isLast = scenarioIndex >= totalScenarios - 1;
     setTimeout(() => {
       if (isLast) navigate('/summary');
@@ -150,7 +156,14 @@ export default function Scenario() {
           {/* Level Header */}
           <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full flex justify-between items-start sm:items-end mb-6 sm:mb-8 border-b-4 border-white/5 pb-4 gap-3">
             <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <button onClick={() => navigate('/dashboard')} className="w-10 h-10 sm:w-12 sm:h-12 bg-card-dark border-2 border-white/10 hover:border-white/30 rounded-xl flex items-center justify-center transition-colors shadow-game shrink-0">
+              <button
+                onClick={() => {
+                  primeAudio();
+                  playSound('click');
+                  navigate('/dashboard');
+                }}
+                className="w-10 h-10 sm:w-12 sm:h-12 bg-card-dark border-2 border-white/10 hover:border-white/30 rounded-xl flex items-center justify-center transition-colors shadow-game shrink-0"
+              >
                  <ArrowLeft size={20} className="text-white/50" />
               </button>
               <div className="min-w-0">

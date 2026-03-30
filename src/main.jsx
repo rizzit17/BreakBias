@@ -4,13 +4,16 @@ import App from './App.jsx';
 import './styles/globals.css';
 import { AppProvider } from './context/AppContext.jsx';
 import { ModeProvider } from './context/ModeContext.jsx';
+import { AudioProvider } from './context/AudioContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ModeProvider>
-      <AppProvider>
-        <App />
-      </AppProvider>
-    </ModeProvider>
+    <AudioProvider>
+      <ModeProvider>
+        <AppProvider>
+          <App />
+        </AppProvider>
+      </ModeProvider>
+    </AudioProvider>
   </StrictMode>
 );

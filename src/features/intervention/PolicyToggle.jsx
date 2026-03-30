@@ -1,15 +1,19 @@
 import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
+import { useAudio } from '../../context/AudioContext';
 import GameCard from '../../components/ui/GameCard';
 import { Check, X } from 'lucide-react';
 import scenariosData from '../../data/scenarios.json';
 
 export default function PolicyToggle({ className = '' }) {
   const { state, dispatch } = useApp();
+  const { playSound, primeAudio } = useAudio();
   const { activeInterventions } = state;
   const policies = scenariosData.interventions;
 
-  function toggle(policyId) {
+  function toggle(policyId, isActive) {
+    primeAudio();
+    playSound(isActive ? 'toggle-off' : 'toggle-on');
     dispatch({ type: 'TOGGLE_INTERVENTION', payload: policyId });
   }
 
@@ -27,7 +31,7 @@ export default function PolicyToggle({ className = '' }) {
           >
             <GameCard
               hover={true}
-              onClick={() => toggle(p.id)}
+              onClick={() => toggle(p.id, isActive)}
               className={`p-4 flex items-center gap-4 cursor-pointer border-4 transition-all duration-300
                 ${isActive 
                   ? 'bg-cyan/10 border-cyan text-cyan' 

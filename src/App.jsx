@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
+import AudioDirector from './components/audio/AudioDirector';
 
 // Pages
 import Landing from './pages/Landing';
@@ -43,6 +44,7 @@ function App() {
   return (
     <Router>
       <div className="relative min-h-screen bg-dark">
+        <AudioDirector />
         <Navbar />
         <AnimatedRoutes />
       </div>

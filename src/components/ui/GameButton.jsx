@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
+import { useAudio } from '../../context/AudioContext';
 
 const GameButton = forwardRef(function GameButton({
   children,
@@ -12,6 +12,7 @@ const GameButton = forwardRef(function GameButton({
   iconPosition = 'left',
   ...props
 }, ref) {
+  const { playSound, primeAudio } = useAudio();
 
   const sizes = {
     sm: 'px-4 py-2 text-sm',
@@ -26,7 +27,17 @@ const GameButton = forwardRef(function GameButton({
   return (
     <button
       ref={ref}
-      onClick={onClick}
+      onMouseEnter={() => {
+        primeAudio();
+        playSound('hover');
+      }}
+      onClick={(event) => {
+        primeAudio();
+        if (!disabled) {
+          playSound('click');
+        }
+        onClick?.(event);
+      }}
       disabled={disabled}
       className={`
         game-button ${cssClass} ${s} 
