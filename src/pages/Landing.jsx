@@ -1,269 +1,341 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Play, Trophy, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import Button from '../components/ui/Button';
-import DualLayerText from '../components/effects/DualLayerText';
-import { ArrowRight, Play } from 'lucide-react';
 
-function ParticleField() {
-  const count = 30;
+/* ─── Pixel / Roblox-style border utility ─────────────────────────── */
+const pixelBorder = {
+  boxShadow: `
+    0 -4px 0 0 #7c3aed,
+    0  4px 0 0 #7c3aed,
+   -4px 0 0 0 #7c3aed,
+    4px 0 0 0 #7c3aed,
+    0 -4px 0 4px #4c1d95,
+    0  4px 0 4px #4c1d95,
+   -4px 0 0 4px #4c1d95,
+    4px 0 0 4px #4c1d95
+  `,
+};
+
+const cyanPixelBorder = {
+  boxShadow: `
+    0 -4px 0 0 #00bcd4,
+    0  4px 0 0 #00bcd4,
+   -4px 0 0 0 #00bcd4,
+    4px 0 0 0 #00bcd4,
+    0 -4px 0 4px #006064,
+    0  4px 0 4px #006064,
+   -4px 0 0 4px #006064,
+    4px 0 0 4px #006064
+  `,
+};
+
+/* ─── Floating Particle ────────────────────────────────────────────── */
+function Particle({ style }) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: count }).map((_, i) => (
+    <motion.div
+      className="absolute rounded-sm pointer-events-none"
+      style={style}
+      animate={{ y: [-20, -80], opacity: [0.8, 0], rotate: [0, 45] }}
+      transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 4, ease: 'easeOut' }}
+    />
+  );
+}
+
+/* ─── XP Bar ───────────────────────────────────────────────────────── */
+function XPBar({ label, value, color = '#a855f7' }) {
+  return (
+    <div className="flex flex-col gap-1 w-full">
+      <div className="flex justify-between text-xs font-mono uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <span>{label}</span><span style={{ color }}>{value}%</span>
+      </div>
+      <div className="h-3 w-full rounded-none bg-[#1a1f35] relative overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.08)' }}>
         <motion.div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: Math.random() * 3 + 1,
-            height: Math.random() * 3 + 1,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            background: ['#C5A3FF', '#00D4FF', '#FF6B9D'][i % 3],
-            opacity: Math.random() * 0.4 + 0.1,
-          }}
-          animate={{
-            y: [0, -40 - Math.random() * 60, 0],
-            opacity: [0.1, 0.5, 0.1],
-          }}
-          transition={{
-            duration: 4 + Math.random() * 6,
-            repeat: Infinity,
-            delay: Math.random() * 4,
-            ease: 'easeInOut',
-          }}
+          className="h-full absolute left-0 top-0"
+          style={{ background: `linear-gradient(90deg, ${color}, ${color}cc)`, width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
         />
-      ))}
+        {/* Shimmer */}
+        <motion.div
+          className="absolute top-0 bottom-0 w-8 opacity-40"
+          style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }}
+          animate={{ left: ['-10%', '110%'] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear', delay: 1 }}
+        />
+      </div>
     </div>
   );
 }
 
-function DualFaceSVG() {
+/* ─── Stat Badge ───────────────────────────────────────────────────── */
+function FloatingBadge({ icon, title, sub, delay, color = '#a855f7' }) {
   return (
-    <div className="relative w-72 h-72 mx-auto">
-      {/* Outer ring */}
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-        className="absolute inset-0 rounded-full"
-        style={{ border: '1px solid rgba(197,163,255,0.15)' }}
-      />
-      <motion.div
-        animate={{ rotate: -360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="absolute inset-4 rounded-full"
-        style={{ border: '1px dashed rgba(0,212,255,0.1)' }}
-      />
-
-      {/* Left identity half */}
-      <motion.div
-        className="absolute left-0 top-0 w-1/2 h-full rounded-l-full overflow-hidden flex items-center justify-end"
-        style={{ background: 'linear-gradient(135deg, rgba(0,212,255,0.12) 0%, rgba(0,102,204,0.08) 100%)' }}
-        animate={{ x: [0, -3, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <div className="pr-8 text-center">
-          <div className="text-3xl font-display font-black text-cyan-400 opacity-80" style={{ textShadow: '0 0 20px rgba(0,212,255,0.5)' }}>AC</div>
-          <div className="text-[10px] text-cyan-400/50 font-display mt-1">HE / HIM</div>
-        </div>
-      </motion.div>
-
-      {/* Right identity half */}
-      <motion.div
-        className="absolute right-0 top-0 w-1/2 h-full rounded-r-full overflow-hidden flex items-center justify-start"
-        style={{ background: 'linear-gradient(135deg, rgba(255,107,157,0.12) 0%, rgba(255,77,109,0.08) 100%)' }}
-        animate={{ x: [0, 3, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-      >
-        <div className="pl-8 text-center">
-          <div className="text-3xl font-display font-black opacity-80" style={{ color: '#FF6B9D', textShadow: '0 0 20px rgba(255,107,157,0.5)' }}>SC</div>
-          <div className="text-[10px] font-display mt-1" style={{ color: 'rgba(255,107,157,0.5)' }}>SHE / HER</div>
-        </div>
-      </motion.div>
-
-      {/* Center seam with glow */}
-      <div className="absolute left-1/2 top-0 bottom-0 -translate-x-px w-px"
-        style={{ background: 'linear-gradient(180deg, transparent, #C5A3FF, #FF4D6D, #00D4FF, transparent)', boxShadow: '0 0 10px rgba(197,163,255,0.6)' }} />
-
-      {/* Center dot */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white"
-        animate={{ scale: [1, 1.4, 1], boxShadow: ['0 0 10px rgba(197,163,255,0.8)', '0 0 25px rgba(197,163,255,1)', '0 0 10px rgba(197,163,255,0.8)'] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-
-      {/* Outer glow */}
-      <div className="absolute inset-0 rounded-full pointer-events-none"
-        style={{ boxShadow: '0 0 60px rgba(197,163,255,0.12), inset 0 0 60px rgba(0,0,0,0.3)' }} />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.7, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ delay, type: 'spring', bounce: 0.4 }}
+      className="flex items-center gap-2 px-3 py-2 rounded-none cursor-default select-none"
+      style={{
+        background: '#0d1120',
+        border: `2px solid ${color}55`,
+        boxShadow: `0 0 20px ${color}22, inset 0 0 10px ${color}11`,
+      }}
+    >
+      <div className="w-7 h-7 flex items-center justify-center rounded-none" style={{ background: `${color}22`, color }}>
+        {icon}
+      </div>
+      <div>
+        <div className="text-xs font-black uppercase tracking-wider text-white leading-none">{title}</div>
+        <div className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{sub}</div>
+      </div>
+    </motion.div>
   );
 }
 
+/* ─── Main Landing ─────────────────────────────────────────────────── */
 export default function Landing() {
   const navigate = useNavigate();
+  const [hovered, setHovered] = useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-  const bgX = useTransform(springX, [-400, 400], [-20, 20]);
-  const bgY = useTransform(springY, [-400, 400], [-20, 20]);
+  const rotateX = useTransform(mouseY, [-300, 300], [8, -8]);
+  const rotateY = useTransform(mouseX, [-500, 500], [-8, 8]);
+
+  const particles = Array.from({ length: 18 }, (_, i) => ({
+    left: `${(i * 6.2) % 100}%`,
+    top: `${60 + (i * 7) % 35}%`,
+    width: i % 3 === 0 ? 8 : 5,
+    height: i % 3 === 0 ? 8 : 5,
+    background: i % 2 === 0 ? '#a855f7' : '#00D4FF',
+    opacity: 0.7,
+  }));
 
   function handleMouseMove(e) {
     const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left - rect.width / 2);
-    mouseY.set(e.clientY - rect.top - rect.height / 2);
+    mouseX.set(e.clientX - rect.width / 2);
+    mouseY.set(e.clientY - rect.height / 2);
   }
 
   return (
     <div
-      className="relative min-h-screen bg-dark overflow-hidden flex flex-col"
+      className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center select-none"
+      style={{ background: '#080c18', fontFamily: "'Fredoka One', 'Nunito', sans-serif" }}
       onMouseMove={handleMouseMove}
     >
-      {/* Animated gradient background */}
+      {/* ── Google Fonts ── */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&display=swap');
+        @keyframes scanline { 0%{top:-20%} 100%{top:110%} }
+        @keyframes glitch {
+          0%,95%,100%{clip-path:none;transform:translate(0)}
+          96%{clip-path:inset(20% 0 60% 0);transform:translate(-4px,2px)}
+          98%{clip-path:inset(50% 0 20% 0);transform:translate(4px,-2px)}
+        }
+        @keyframes pulse-ring {
+          0%{transform:scale(1);opacity:.6}
+          100%{transform:scale(1.6);opacity:0}
+        }
+        .glitch-text { animation: glitch 5s infinite; }
+        .btn-roblox:hover .pulse-ring { animation: pulse-ring 0.8s ease-out infinite; }
+      `}</style>
+
+      {/* ── Deep grid background ── */}
+      <div className="absolute inset-0" style={{
+        backgroundImage: `
+          linear-gradient(rgba(168,85,247,0.07) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(168,85,247,0.07) 1px, transparent 1px)
+        `,
+        backgroundSize: '60px 60px',
+      }} />
+
+      {/* ── Radial vignette ── */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #080c18 100%)'
+      }} />
+
+      {/* ── Floor glow ── */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none" style={{
+        background: 'linear-gradient(to top, rgba(168,85,247,0.15) 0%, transparent 100%)',
+        transform: 'perspective(800px) rotateX(50deg)',
+        transformOrigin: 'bottom',
+      }} />
+
+      {/* ── Scanline sweep ── */}
+      <div className="absolute left-0 right-0 h-32 pointer-events-none z-0" style={{
+        background: 'linear-gradient(to bottom, transparent, rgba(0,212,255,0.03), transparent)',
+        animation: 'scanline 8s linear infinite',
+      }} />
+
+      {/* ── Particles ── */}
+      {particles.map((p, i) => <Particle key={i} style={p} />)}
+
+      {/* ── TOP HUD BAR ── */}
       <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{ x: bgX, y: bgY }}
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1, type: 'spring' }}
+        className="absolute top-6 left-0 right-0 flex justify-center gap-3 px-6 z-20"
       >
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full"
-          style={{ background: '#C5A3FF', filter: 'blur(120px)', opacity: 0.07 }} />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full"
-          style={{ background: '#00D4FF', filter: 'blur(100px)', opacity: 0.06 }} />
-        <div className="absolute top-2/3 left-1/2 w-72 h-72 rounded-full"
-          style={{ background: '#FF4D6D', filter: 'blur(100px)', opacity: 0.05 }} />
+        <FloatingBadge icon={<Trophy size={14} />} title="Career" sub="Simulator Mode" delay={0.2} color="#00D4FF" />
       </motion.div>
 
-      <ParticleField />
-
-      {/* Noise overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-30"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")`, backgroundSize: '200px' }} />
-
-      {/* Hero content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
-        {/* Eyebrow */}
+      {/* ── MAIN CARD ── */}
+      <motion.div
+        style={{ rotateX, rotateY, perspective: 1200 }}
+        className="relative z-10 w-full max-w-3xl px-6 text-center"
+      >
+        {/* Interactive Simulation Tag */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
+          transition={{ delay: 0.2 }}
+          className="inline-flex items-center gap-2 px-4 py-2 mb-8 text-xs font-black uppercase tracking-[0.25em]"
+          style={{
+            background: '#0d1120',
+            color: '#00D4FF',
+            border: '2px solid #00D4FF44',
+            boxShadow: '0 0 20px #00D4FF33',
+          }}
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-widest glass"
-            style={{ color: '#C5A3FF', border: '1px solid rgba(197,163,255,0.2)' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Interactive Workplace Bias Simulation
-          </span>
+          <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
+          Interactive Simulation
+          <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
         </motion.div>
 
-        {/* Title */}
+        {/* ROLE */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mb-6"
+          initial={{ y: -60, opacity: 0, scale: 0.8 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', bounce: 0.6, duration: 0.9 }}
         >
-          <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-tight mb-2"
-            style={{ letterSpacing: '-0.02em' }}>
-            Workday
-            <span className="block text-gradient-primary">Replay</span>
+          <h1
+            className="font-black uppercase leading-none text-white"
+            style={{
+              fontSize: 'clamp(5rem, 15vw, 10rem)',
+              textShadow: '4px 4px 0px #1a0a2e',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            ROLE
           </h1>
-          <div className="text-xl md:text-2xl font-display font-light text-white/40"
-            style={{ letterSpacing: '0.15em' }}>
-            DUAL IDENTITY
-          </div>
+        </motion.div>
+
+        {/* PLAYD */}
+        <motion.div
+          initial={{ y: 60, opacity: 0, scale: 0.8 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', bounce: 0.6, duration: 0.9, delay: 0.1 }}
+          className="relative inline-block"
+        >
+          <h1
+            className="font-black uppercase leading-none"
+            style={{
+              fontSize: 'clamp(5rem, 15vw, 10rem)',
+              color: '#a855f7',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            PLAYD
+          </h1>
+          {/* Underline block — Roblox style */}
+          <div className="absolute -bottom-2 left-0 right-0 h-3" style={{ background: '#5b21b6', transform: 'skewX(-5deg)' }} />
         </motion.div>
 
         {/* Tagline */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          className="mb-12 max-w-lg"
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 mb-2 text-base md:text-xl font-black uppercase tracking-[0.2em]"
+          style={{ color: 'rgba(255,255,255,0.45)' }}
         >
-          <DualLayerText
-            text="Same work. Same day. Different reality."
-            altText="Same effort. Same skill. Different treatment."
-            className="w-full"
-            textClassName="text-xl md:text-2xl text-white/70 font-light leading-relaxed"
-            altClassName="text-xl md:text-2xl font-light leading-relaxed text-gradient-primary"
-          />
-          <p className="mt-4 text-sm text-white/30 leading-relaxed">
-            Experience the same workday through three different identities.<br />
-            Watch how perception changes everything.
-          </p>
-        </motion.div>
+          Press Start to Enter Dual Reality.<br></br><br></br><br></br>
+        </motion.p>
+        
 
-        {/* Dual face visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3, type: 'spring' }}
-          className="mb-12"
-        >
-          <DualFaceSVG />
-        </motion.div>
 
-        {/* CTAs */}
+
+        {/* ── START BUTTON ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="flex flex-col sm:flex-row items-center gap-4"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4, type: 'spring', bounce: 0.5 }}
+          className="flex flex-col items-center gap-3"
         >
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => navigate('/intro')}
-            icon={<Play size={18} />}
-            iconPosition="left"
+          <motion.button
+            className="btn-roblox relative group flex items-center gap-3 px-12 py-5 font-black uppercase text-xl md:text-2xl tracking-widest text-black cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, #c084fc, #a855f7)',
+              ...pixelBorder,
+              letterSpacing: '0.12em',
+            }}
+            whileHover={{ scale: 1.05, y: -3 }}
+            whileTap={{ scale: 0.95 }}
+            onHoverStart={() => setHovered(true)}
+            onHoverEnd={() => setHovered(false)}
+            onClick={() => navigate('/mode-select')}
           >
-            Begin the Replay
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={() => navigate('/comparison')}
-            icon={<ArrowRight size={16} />}
-            iconPosition="right"
-          >
-            See the Comparison
-          </Button>
+            {/* Pulse ring */}
+            <div
+              className="pulse-ring absolute inset-0 pointer-events-none"
+              style={{
+                border: '3px solid #a855f7',
+                opacity: 0,
+              }}
+            />
+            <motion.span
+              animate={{ x: hovered ? 4 : 0 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+            >
+              <Play size={22} fill="black" />
+            </motion.span>
+            START GAME
+            <motion.span
+              animate={{ x: hovered ? 4 : 0, opacity: hovered ? 1 : 0 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+            >
+              <ChevronRight size={20} />
+            </motion.span>
+          </motion.button>
+
+
         </motion.div>
 
-        {/* Stats row */}
+        {/* ── BOTTOM HINT ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-20 flex items-center gap-12"
+          transition={{ delay: 1.1 }}
+          className="mt-10 flex items-center justify-center gap-6 text-xs font-black uppercase tracking-[0.2em]"
+          style={{ color: 'rgba(255,255,255,0.2)' }}
         >
-          {[
-            { value: '3', label: 'Identities' },
-            { value: '4', label: 'Scenarios' },
-            { value: '7', label: 'Bias Types' },
-          ].map(stat => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl font-display font-black text-gradient-primary">{stat.value}</div>
-              <div className="text-[10px] text-white/30 font-display uppercase tracking-widest">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Bottom scroll hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="relative z-10 pb-8 flex justify-center"
-      >
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-white/20 text-xs font-display flex flex-col items-center gap-2"
-        >
-          <div className="w-px h-8" style={{ background: 'linear-gradient(180deg, transparent, rgba(197,163,255,0.3))' }} />
-          SCROLL
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#a855f7]" />
+            Use Mouse to Navigate
+          </span>
+          <span className="text-white/10">•</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF]" />
+            Headphones Recommended
+          </span>
         </motion.div>
       </motion.div>
+
+      {/* ── CORNER DECORATIONS — Roblox HUD style ── */}
+      {[
+        { pos: 'top-4 left-4', color: '#a855f7' },
+        { pos: 'top-4 right-4', color: '#a855f7' },
+        { pos: 'bottom-4 left-4', color: '#00D4FF' },
+        { pos: 'bottom-4 right-4', color: '#00D4FF' },
+      ].map(({ pos, color }, i) => (
+        <div key={i} className={`absolute ${pos} w-12 h-12 pointer-events-none`}>
+          <div className="absolute top-0 left-0 w-4 h-0.5" style={{ background: color }} />
+          <div className="absolute top-0 left-0 w-0.5 h-4" style={{ background: color }} />
+          <div className="absolute bottom-0 right-0 w-4 h-0.5" style={{ background: color }} />
+          <div className="absolute bottom-0 right-0 w-0.5 h-4" style={{ background: color }} />
+        </div>
+      ))}
     </div>
   );
 }

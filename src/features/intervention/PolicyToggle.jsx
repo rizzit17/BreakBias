@@ -1,75 +1,61 @@
 import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
+import GameCard from '../../components/ui/GameCard';
+import { Check, X } from 'lucide-react';
 import scenariosData from '../../data/scenarios.json';
-
-const ICON_MAP = {
-  calendar: '📅',
-  shield: '🛡',
-  'check-circle': '✅',
-  users: '👥',
-};
 
 export default function PolicyToggle({ className = '' }) {
   const { state, dispatch } = useApp();
   const { activeInterventions } = state;
+  const policies = scenariosData.interventions;
 
-  function toggle(id) {
-    dispatch({ type: 'TOGGLE_INTERVENTION', payload: id });
+  function toggle(policyId) {
+    dispatch({ type: 'TOGGLE_INTERVENTION', payload: policyId });
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      {scenariosData.interventions.map((policy, i) => {
-        const isActive = activeInterventions.includes(policy.id);
+    <div className={`space-y-4 ${className}`}>
+      {policies.map((p, i) => {
+        const isActive = activeInterventions.includes(p.id);
+
         return (
           <motion.div
-            key={policy.id}
-            initial={{ opacity: 0, x: -20 }}
+            key={p.id}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="rounded-2xl p-4 transition-all duration-400 cursor-pointer group"
-            style={{
-              background: isActive ? 'rgba(0,212,255,0.06)' : 'rgba(255,255,255,0.02)',
-              border: `1px solid ${isActive ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.05)'}`,
-              boxShadow: isActive ? '0 0 20px rgba(0,212,255,0.08)' : 'none',
-            }}
-            onClick={() => toggle(policy.id)}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <span className="text-xl flex-shrink-0 mt-0.5">{ICON_MAP[policy.icon] || '🔧'}</span>
-                <div>
-                  <div className="text-sm font-display font-semibold text-white mb-1">
-                    {policy.title}
-                  </div>
-                  <div className="text-xs text-white/40 leading-relaxed mb-2">
-                    {policy.description}
-                  </div>
-                  {isActive && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-display font-semibold"
-                      style={{ background: 'rgba(0,212,255,0.12)', color: '#00D4FF' }}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" />
-                      {policy.impact}
-                    </motion.div>
-                  )}
+            <GameCard
+              hover={true}
+              onClick={() => toggle(p.id)}
+              className={`p-4 flex items-center gap-4 cursor-pointer border-4 transition-all duration-300
+                ${isActive 
+                  ? 'bg-cyan/10 border-cyan text-cyan' 
+                  : 'bg-card-dark border-gray-800 text-white/60 hover:border-white/20'}`}
+            >
+              {/* Switch Box */}
+              <div 
+                className={`w-12 h-12 flex-shrink-0 rounded-xl flex items-center justify-center border-4 shadow-game transition-colors duration-300
+                  ${isActive ? 'bg-cyan border-[#00B3CC] text-[#0B0F1A]' : 'bg-[#0B0F1A] border-gray-800'}`}
+              >
+                {isActive ? <Check size={24} strokeWidth={4} /> : <X size={20} />}
+              </div>
+              
+              <div className="flex-1">
+                <div className={`font-display font-black text-lg uppercase mb-1 ${isActive ? 'text-white' : 'text-white/60'}`}>
+                  {p.title}
+                </div>
+                <div className="font-display text-sm font-medium opacity-80 leading-snug">
+                  {p.description}
                 </div>
               </div>
-              {/* Toggle switch */}
-              <div
-                className="flex-shrink-0 w-10 h-5 rounded-full relative transition-all duration-300"
-                style={{ background: isActive ? '#00D4FF' : 'rgba(255,255,255,0.1)' }}
-              >
-                <motion.div
-                  className="absolute top-0.5 bottom-0.5 w-4 rounded-full bg-white shadow"
-                  animate={{ left: isActive ? '22px' : '2px' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                />
-              </div>
-            </div>
+
+              {isActive && (
+                <div className="hidden sm:block text-[10px] font-display font-black bg-cyan text-[#0B0F1A] px-2 py-1 uppercase tracking-widest shadow-game border-2 border-[#00B3CC] rotate-3">
+                  MOD ACTIVE
+                </div>
+              )}
+            </GameCard>
           </motion.div>
         );
       })}

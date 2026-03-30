@@ -2,16 +2,24 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
-import RoleCard from '../features/role/RoleCard';
-import Button from '../components/ui/Button';
+import GameCard from '../components/ui/GameCard';
+import GameButton from '../components/ui/GameButton';
 import AvatarMorph from '../components/effects/AvatarMorph';
+import StatBadge from '../components/ui/StatBadge';
 import { useRoleState } from '../hooks/useRoleState';
-import { ArrowRight, Info } from 'lucide-react';
+import { useMode } from '../context/ModeContext';
+import { Shield, Swords, Star } from 'lucide-react';
 
 export default function RoleSelect() {
   const navigate = useNavigate();
-  const { allRoles, selectRole, selectedRole } = useRoleState();
+  const { mode, userContext } = useMode();
+  const { allRoles, selectRole } = useRoleState();
   const [localSelected, setLocalSelected] = useState(null);
+
+  if (mode === 'personal') {
+    navigate(userContext?.name ? '/dashboard' : '/setup');
+    return null;
+  }
 
   function handleSelect(roleId) {
     const role = allRoles.find(r => r.id === roleId);
@@ -25,94 +33,101 @@ export default function RoleSelect() {
     navigate('/dashboard');
   }
 
-  const selectedRoleData = allRoles.find(r => r.id === localSelected);
+  const selectedData = allRoles.find(r => r.id === localSelected);
+
+  // RPG Stat Multipliers mapping
+  const roleStats = {
+    'male-manager': { str: 'High', def: 'High', luk: 'Max' },
+    'female-employee': { str: 'Med', def: 'Low', luk: 'Low' },
+    'intern': { str: 'Low', def: 'Low', luk: 'Med' }
+  };
 
   return (
-    <PageWrapper>
-      <div className="min-h-screen pt-24 pb-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-display font-semibold uppercase tracking-widest glass mb-6"
-              style={{ color: '#C5A3FF', border: '1px solid rgba(197,163,255,0.2)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Step 1 of 4
-            </div>
-            <h1 className="text-4xl md:text-5xl font-display font-black text-white mb-4" style={{ letterSpacing: '-0.02em' }}>
-              Choose your{' '}
-              <span className="text-gradient-primary">identity</span>
+    <PageWrapper ambientOrbs={false}>
+      <div className="min-h-screen pt-24 pb-16 px-6 bg-game-grid">
+        <div className="max-w-5xl mx-auto flex flex-col items-center">
+          
+          <motion.div initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center mb-12">
+            <StatBadge value="1/3" label="Players" color="#00D4FF" className="mb-4" />
+            <h1 className="text-5xl font-display font-black text-white uppercase text-game-shadow">
+              SELECT YOUR <span className="text-primary">FIGHTER</span>
             </h1>
-            <p className="text-white/40 max-w-lg mx-auto">
-              You'll experience the same workday, the same scenarios — from inside a different identity.
-              Who lives the equitable reality? Who doesn't?
+            <p className="mt-4 text-white/50 font-bold uppercase tracking-widest text-sm">
+              Same Level. Different Difficulty Multiplier.
             </p>
           </motion.div>
 
-          {/* Role cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
-            {allRoles.map((role, i) => (
-              <RoleCard
-                key={role.id}
-                role={role}
-                index={i}
-                isSelected={localSelected === role.id}
-                onSelect={handleSelect}
-              />
-            ))}
+          <div className="grid md:grid-cols-3 gap-8 w-full mb-12">
+            {allRoles.map((role) => {
+              const isSel = localSelected === role.id;
+              const stats = roleStats[role.id];
+
+              return (
+                <GameCard
+                  key={role.id}
+                  hover={!role.locked}
+                  hoverGlowColor={role.color === '#00D4FF' ? 'cyan' : (role.color === '#C5A3FF' ? 'primary' : 'accent')}
+                  onClick={() => handleSelect(role.id)}
+                  className={`relative flex flex-col items-center p-8 transition-all duration-300 border-4 
+                    ${role.locked ? 'opacity-40 grayscale pointer-events-none' : ''} 
+                    ${isSel ? `border-[${role.color}] bg-[${role.color}]/10 scale-105` : 'border-white/10'}`
+                  }
+                  style={isSel ? { borderColor: role.color, backgroundColor: `${role.color}15` } : {}}
+                >
+                  {isSel && (
+                    <div className="absolute top-4 right-4 animate-bounce">
+                      <Star fill={role.color} color={role.color} size={24} />
+                    </div>
+                  )}
+
+                  <AvatarMorph roleId={role.id} size={100} isAnimating={isSel} />
+                  
+                  <h2 className="mt-6 text-2xl font-display font-black text-white uppercase" style={{ color: role.color }}>
+                    {role.name}
+                  </h2>
+                  <div className="text-xs font-display text-white/50 uppercase font-bold tracking-widest px-3 py-1 bg-black/40 rounded-full mt-2 border-2 border-white/5">
+                    {role.locked ? 'LOCKED [Requires Pass]' : role.title}
+                  </div>
+
+                  {!role.locked && (
+                    <div className="w-full mt-6 space-y-2 bg-black/30 p-3 rounded-xl border-2 border-white/5">
+                      <div className="flex justify-between items-center text-xs font-display font-bold">
+                        <span className="text-white/40 flex items-center gap-1"><Swords size={12}/> ATK</span>
+                        <span className={stats.str === 'High' ? 'text-cyan' : 'text-primary'}>{stats.str}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs font-display font-bold">
+                        <span className="text-white/40 flex items-center gap-1"><Shield size={12}/> DEF</span>
+                        <span className={stats.def === 'High' ? 'text-cyan' : 'text-accent'}>{stats.def}</span>
+                      </div>
+                    </div>
+                  )}
+
+                </GameCard>
+              );
+            })}
           </div>
 
-          {/* Info note about intern */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex items-center gap-2 justify-center mb-10"
-          >
-            <Info size={12} className="text-white/20" />
-            <p className="text-xs text-white/25 font-display">
-              The Intern role unlocks after completing any other identity's replay
-            </p>
-          </motion.div>
-
-          {/* Confirm button */}
           <AnimatePresence>
             {localSelected && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex flex-col items-center gap-4"
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-10"
               >
-                {/* Selected preview */}
-                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl glass"
-                  style={{ border: `1px solid ${selectedRoleData?.color}33` }}>
-                  <AvatarMorph roleId={localSelected} size={36} />
-                  <div>
-                    <div className="text-sm font-display font-semibold text-white">{selectedRoleData?.name}</div>
-                    <div className="text-xs text-white/40">{selectedRoleData?.pronoun} · {selectedRoleData?.title}</div>
-                  </div>
-                  <div className="ml-2 text-xs font-display px-2 py-1 rounded-lg"
-                    style={{ background: `${selectedRoleData?.color}18`, color: selectedRoleData?.color }}>
-                    Selected
-                  </div>
-                </div>
-
-                <Button
+                <GameButton
                   variant="primary"
-                  size="lg"
+                  size="xl"
                   onClick={handleConfirm}
-                  icon={<ArrowRight size={18} />}
-                  iconPosition="right"
+                  style={{ background: selectedData?.color, borderColor: '#fff' }}
+                  className="px-16"
                 >
-                  Begin as {selectedRoleData?.name}
-                </Button>
+                  SPAWN AS {selectedData?.name}
+                </GameButton>
               </motion.div>
             )}
           </AnimatePresence>
+
         </div>
       </div>
     </PageWrapper>

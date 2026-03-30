@@ -1,67 +1,43 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
-import { useBiasEngine } from '../../hooks/useBiasEngine';
+import { AlertTriangle, Info } from 'lucide-react';
+import StatBadge from '../../components/ui/StatBadge';
 
-export default function BiasReveal({ scenario, className = '' }) {
-  const [expanded, setExpanded] = useState(false);
-  const { roleId, getOutcome, allRoles } = useBiasEngine();
-  const myOutcome = getOutcome(scenario);
-
-  // Find the male-manager outcome for comparison
-  const referenceOutcome = scenario?.identityOutcomes?.['male-manager'];
-  const isReference = roleId === 'male-manager';
-  const biasLevel = myOutcome?.biasLevel || 0;
-
-  if (!myOutcome || biasLevel === 0) return null;
+export default function BiasReveal({ scenario }) {
+  if (!scenario.biasTypes || scenario.biasTypes.length === 0) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl overflow-hidden ${className}`}
-      style={{ border: '1px solid rgba(255,77,109,0.2)', background: 'rgba(255,77,109,0.04)' }}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="p-6 bg-card-dark border-4 border-accent shadow-game relative overflow-hidden"
     >
-      <button
-        onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
-      >
-        <div className="flex items-center gap-2">
-          <AlertTriangle size={14} className="text-accent" />
-          <span className="text-sm font-display font-semibold text-accent">
-            {myOutcome.biasLabel || 'Bias Detected'}
-          </span>
-          <span className="text-xs font-display px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,77,109,0.15)', color: '#FF4D6D' }}>
-            {biasLevel}% severity
-          </span>
+      {/* Hazard stripes background for gamey danger feel */}
+      <div 
+        className="absolute inset-0 opacity-10 pointer-events-none"
+        style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #FF4D6D 10px, #FF4D6D 20px)' }}
+      />
+      
+      <div className="relative z-10 flex flex-col sm:flex-row items-start gap-6">
+        <div className="flex-shrink-0 w-16 h-16 bg-accent border-[3px] border-[#900021] rounded-xl flex items-center justify-center transform rotate-3 shadow-game">
+          <AlertTriangle size={36} color="#0B0F1A" />
         </div>
-        {expanded ? <ChevronUp size={14} className="text-white/40" /> : <ChevronDown size={14} className="text-white/40" />}
-      </button>
-
-      {expanded && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          className="px-4 pb-4"
-        >
-          <div className="text-xs text-white/40 mb-3 font-display uppercase tracking-widest">
-            What happened vs. what should have happened
+        
+        <div className="flex-1">
+          <h3 className="text-xl font-display font-black text-accent uppercase mb-2 text-game-shadow">
+            SYSTEMIC BIAS DETECTED
+          </h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {scenario.biasTypes.map((bias, i) => (
+              <StatBadge key={i} value={bias} color="#FF6B9D" />
+            ))}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl p-3" style={{ background: 'rgba(255,77,109,0.08)', border: '1px solid rgba(255,77,109,0.2)' }}>
-              <div className="text-[10px] text-accent font-display font-semibold uppercase tracking-widest mb-2">Your experience</div>
-              <p className="text-xs text-white/60 leading-relaxed">{myOutcome.content || myOutcome.quote}</p>
-            </div>
-            {referenceOutcome && (
-              <div className="rounded-xl p-3" style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)' }}>
-                <div className="text-[10px] text-cyan font-display font-semibold uppercase tracking-widest mb-2">Alex's experience</div>
-                <p className="text-xs text-white/60 leading-relaxed">{referenceOutcome.content || referenceOutcome.quote}</p>
-              </div>
-            )}
+          <div className="bg-black/40 p-3 border-l-4 border-accent text-sm font-medium text-white/80 leading-relaxed font-display">
+            <Info size={14} className="inline mr-2 text-accent" />
+            {scenario.biasMechanism}
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </motion.div>
   );
 }

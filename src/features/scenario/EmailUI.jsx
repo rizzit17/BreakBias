@@ -1,132 +1,64 @@
 import { motion } from 'framer-motion';
-import { Mail, Archive, Star, Trash2, Reply } from 'lucide-react';
-import GlitchEffect from '../../components/effects/GlitchEffect';
-import Badge from '../../components/ui/Badge';
+import { Mail, Reply, Star, Trash } from 'lucide-react';
+import AvatarMorph from '../../components/effects/AvatarMorph';
 
-const TONE_COLORS = {
-  positive: { color: '#00D4FF', label: 'Positive Tone', variant: 'cyan' },
-  mixed: { color: '#FF6B9D', label: 'Problematic Language', variant: 'accent' },
-  dismissive: { color: '#9B59B6', label: 'Dismissive Tone', variant: 'primary' },
-};
-
-export default function EmailUI({ outcome, roleId, biasActive = false }) {
-  if (!outcome) return null;
-
-  const toneConfig = TONE_COLORS[outcome.tone] || TONE_COLORS.positive;
-  const biasLevel = outcome.biasLevel || 0;
-
-  function highlightKeywords(text, keywords = [], color = '#FF6B9D') {
-    if (!keywords.length) return text;
-    return text.split('\n').map((line, li) => (
-      <span key={li}>
-        {line.split(' ').map((word, wi) => {
-          const clean = word.toLowerCase().replace(/[.,!?]/g, '');
-          const isKeyword = keywords.some(k => k.toLowerCase() === clean);
-          return (
-            <span key={wi}>
-              {isKeyword ? (
-                <motion.mark
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 + wi * 0.05 }}
-                  style={{
-                    background: `${color}22`,
-                    color,
-                    padding: '0 2px',
-                    borderRadius: 3,
-                    border: `1px solid ${color}33`,
-                  }}
-                >
-                  {word}
-                </motion.mark>
-              ) : word}
-              {' '}
-            </span>
-          );
-        })}
-        {li < text.split('\n').length - 1 && <br />}
-      </span>
-    ));
-  }
+export default function EmailUI({ outcome, roleId, biasActive }) {
+  const isTargeted = ['female-employee', 'intern'].includes(roleId);
+  const biasLevel = outcome?.biasLevel || 0;
 
   return (
-    <GlitchEffect active={biasActive && biasLevel > 60} intensity="low">
-      <div className="rounded-2xl overflow-hidden glass" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Email client header */}
-        <div className="bg-black/40 px-4 py-2.5 flex items-center gap-3 border-b border-white/5">
-          <Mail size={14} className="text-primary/60" />
-          <span className="text-xs font-display font-semibold text-white/50">Inbox</span>
-          <span className="text-xs text-white/20">/ Performance Review</span>
-        </div>
+    <div className="flex flex-col h-full bg-[#151928] border-2 border-white/5 font-mono text-sm">
+      
+      {/* Top Bar */}
+      <div className="bg-[#0B0F1A] border-b-4 border-white/5 px-4 py-3 flex gap-2 overflow-hidden items-center">
+        <Mail size={18} className="text-white/40" />
+        <span className="font-display font-black tracking-widest text-white/50 text-xs uppercase uppercase">
+          Client Feedback Loop
+        </span>
+      </div>
 
-        {/* Email header */}
-        <div className="px-5 pt-4 pb-3 border-b border-white/5">
-          <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="p-4 sm:p-6 bg-[#0B0F1A]/80 flex-1 relative overflow-y-auto">
+        <div className="max-w-xl mx-auto space-y-4">
+          
+          <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-between items-start mb-6 pb-4 border-b-2 border-white/10">
             <div>
-              <h3 className="font-display font-semibold text-white text-sm mb-1">{outcome.subject}</h3>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-                  style={{ background: toneConfig.color + '22', color: toneConfig.color }}>
-                  {outcome.fromName?.[0] || 'M'}
-                </div>
-                <span className="text-xs text-white/40 font-display">{outcome.fromName}</span>
-                <span className="text-xs text-white/20">&lt;{outcome.from}&gt;</span>
-              </div>
+              <div className="text-xl font-display font-bold text-white mb-1 shadow-game inline-block">Client Presentation Notes</div>
+              <div className="text-white/40 text-xs uppercase font-bold tracking-widest">From: Mark [Director]</div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={toneConfig.variant} dot>{toneConfig.label}</Badge>
+            <div className="flex gap-2 text-white/30">
+               <button className="p-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 hover:text-white"><Reply size={16}/></button>
+               <button className="p-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 hover:text-white"><Star size={16}/></button>
+               <button className="p-2 bg-white/5 border border-white/10 rounded hover:bg-[#900021] hover:text-accent"><Trash size={16}/></button>
             </div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Email body */}
-        <div className="px-5 py-4">
-          <p className="text-sm text-white/70 leading-relaxed whitespace-pre-line font-light">
-            {biasActive && outcome.keywords?.length
-              ? highlightKeywords(outcome.body, outcome.keywords, '#FF6B9D')
-              : outcome.body
-            }
-          </p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="space-y-4 text-white/70 leading-loose">
+            <p>Hey team,</p>
+            <p>Great job on the pitch yesterday. The client loved the new direction.</p>
+            
+            <div className="relative">
+              <span className={`transition-all duration-300 ${biasActive && isTargeted ? 'bg-[#900021]/80 text-white p-1 rounded font-bold arcade-glitch inline-block border border-accent shadow-game' : ''}`}>
+                 {isTargeted 
+                   ? "I'm going to have David take point on the execution phase instead of you, given the scope." 
+                   : "Alex, I want you fully running point on execution since you crushed the pitch."}
+              </span>
+              
+              {biasActive && isTargeted && (
+                <motion.div 
+                   initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, type: 'spring' }}
+                   className="absolute -right-10 -bottom-8 bg-accent text-black uppercase font-display font-black px-3 py-1 border-[3px] border-[#900021] rotate-12 shadow-game pointer-events-none"
+                >
+                  [ OPPORTUNITY DENIED ]
+                </motion.div>
+              )}
+            </div>
 
-          {biasActive && outcome.keywords?.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="mt-4 rounded-xl p-3"
-              style={{ background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.15)' }}
-            >
-              <div className="text-[10px] font-display font-semibold text-accent uppercase tracking-widest mb-2">
-                ⚠ Biased Language Detected
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {outcome.keywords.map(k => (
-                  <span key={k} className="px-2 py-0.5 rounded-full text-[10px] font-display"
-                    style={{ background: 'rgba(255,77,109,0.12)', color: '#FF6B9D', border: '1px solid rgba(255,77,109,0.2)' }}>
-                    "{k}"
-                  </span>
-                ))}
-              </div>
-              <p className="text-[10px] text-white/30 mt-2">
-                These terms are statistically used more often in reviews of women vs. men in the same role.
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Action bar */}
-        <div className="px-5 py-3 border-t border-white/5 flex items-center gap-3">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display glass hover:bg-white/10 transition-colors text-white/50">
-            <Reply size={12} /> Reply
-          </button>
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center glass hover:bg-white/10 transition-colors text-white/30">
-            <Star size={12} />
-          </button>
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center glass hover:bg-white/10 transition-colors text-white/30">
-            <Archive size={12} />
-          </button>
+            <p>Let's regroup Monday.</p>
+            <p className="opacity-50 mt-8">— Mark</p>
+          </motion.div>
         </div>
       </div>
-    </GlitchEffect>
+    
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -6,46 +6,81 @@ import MeetingUI from '../features/scenario/MeetingUI';
 import EmailUI from '../features/scenario/EmailUI';
 import ChatUI from '../features/scenario/ChatUI';
 import BiasReveal from '../features/bias/BiasReveal';
-import GlitchEffect from '../components/effects/GlitchEffect';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
+import GameCard from '../components/ui/GameCard';
+import GameButton from '../components/ui/GameButton';
+import FloatingFeedback from '../components/effects/FloatingFeedback';
 import { useApp } from '../context/AppContext';
+import { useScenarioEngine } from '../hooks/useScenarioEngine';
 import { useBiasEngine } from '../hooks/useBiasEngine';
-import { Clock, ChevronRight, ChevronLeft, AlertTriangle } from 'lucide-react';
-import scenariosData from '../data/scenarios.json';
+import { useMode } from '../context/ModeContext';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 export default function Scenario() {
   const { index } = useParams();
   const navigate = useNavigate();
   const { state } = useApp();
+  const { mode, userContext } = useMode();
+  const getScenarios = useScenarioEngine();
   const { selectedRole } = state;
   const { getOutcome, completeScenario } = useBiasEngine();
+  const isPersonalMode = mode === 'personal';
 
+  const scenariosList = getScenarios();
   const scenarioIndex = parseInt(index || '0', 10);
-  const scenario = scenariosData.scenarios[scenarioIndex];
-  const totalScenarios = scenariosData.scenarios.length;
+  const scenario = scenariosList[scenarioIndex];
+  const totalScenarios = scenariosList.length;
 
   const [revealed, setRevealed] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const [biasActive, setBiasActive] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [personalAction, setPersonalAction] = useState('');
+  const [personalBiasView, setPersonalBiasView] = useState('medium');
 
   if (!selectedRole || !scenario) {
-    navigate(selectedRole ? '/dashboard' : '/role-select');
+    navigate(selectedRole ? '/dashboard' : (isPersonalMode ? '/setup' : '/role-select'));
     return null;
   }
 
-  const outcome = getOutcome(scenario);
+  const baseOutcome = getOutcome(scenario);
+  const personalBiasMap = { low: 15, medium: 50, high: 85 };
+  const personalOutcome = isPersonalMode ? {
+    ...(baseOutcome || {}),
+    biasLevel: personalBiasMap[personalBiasView],
+    content: personalAction
+      ? `You responded as ${userContext?.name || 'you'}: "${personalAction}". The team reaction showed a ${personalBiasView} level of resistance in this moment.`
+      : baseOutcome?.content,
+    biasType: personalBiasView === 'high' ? 'credit-theft' : (personalBiasView === 'medium' ? 'interruption' : null),
+    biasLabel: personalBiasView === 'high'
+      ? 'High Resistance Encountered'
+      : (personalBiasView === 'medium' ? 'Mixed Support / Pushback' : 'Supportive Interaction')
+  } : baseOutcome;
+  const outcome = personalOutcome;
   const biasLevel = outcome?.biasLevel || 0;
   const hasBias = biasLevel > 20;
 
+  function spawnFeedback(text, type, delay = 0) {
+    setTimeout(() => {
+      setFeedbacks(prev => [
+        ...prev, 
+        { id: Math.random(), text, type, x: `${40 + Math.random() * 20}%`, y: `${30 + Math.random() * 20}%` }
+      ]);
+    }, delay);
+  }
+
   function handleReveal() {
+    if (isPersonalMode && personalAction.trim().length < 12) return;
     setRevealed(true);
-    if (hasBias) setBiasActive(true);
+    
+    // Spawn game-like floaty text
+    if (hasBias) {
+      spawnFeedback(`${biasLevel} BIAS DMG`, 'negative');
+      spawnFeedback(`CONF XP LOST`, 'negative', 400);
+    } else {
+      spawnFeedback(`XP GAINED`, 'positive');
+    }
   }
 
   function handleComplete() {
-    completeScenario(scenario.id);
-    setCompleted(true);
+    completeScenario(scenario.id, isPersonalMode ? personalOutcome : null);
     const isLast = scenarioIndex >= totalScenarios - 1;
     setTimeout(() => {
       if (isLast) navigate('/summary');
@@ -53,165 +88,139 @@ export default function Scenario() {
     }, 600);
   }
 
-  const typeLabels = { meeting: 'Meeting', email: 'Email', chat: 'Team Chat' };
   const TypeUI = { meeting: MeetingUI, email: EmailUI, chat: ChatUI }[scenario.type];
 
   return (
-    <PageWrapper>
-      {/* Bias UI distortion overlay */}
-      <AnimatePresence>
-        {biasActive && hasBias && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 pointer-events-none z-30"
-            style={{
-              background: biasLevel > 80
-                ? 'radial-gradient(ellipse at center, rgba(255,77,109,0.04) 0%, transparent 70%)'
-                : 'radial-gradient(ellipse at center, rgba(197,163,255,0.03) 0%, transparent 70%)',
-            }}
-          />
-        )}
-      </AnimatePresence>
+    <PageWrapper ambientOrbs={false}>
+      <FloatingFeedback messages={feedbacks} />
 
-      <div className="min-h-screen pt-20 pb-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Scenario header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/dashboard')}
-                className="w-8 h-8 rounded-full glass flex items-center justify-center hover:bg-white/10 transition-colors">
-                <ChevronLeft size={16} className="text-white/50" />
+      <div className="min-h-screen pt-24 pb-16 px-6 bg-[#070A13]">
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
+          
+          {/* Level Header */}
+          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full flex justify-between items-end mb-8 border-b-4 border-white/5 pb-4">
+            <div className="flex items-center gap-4">
+              <button onClick={() => navigate('/dashboard')} className="w-12 h-12 bg-card-dark border-2 border-white/10 hover:border-white/30 rounded-xl flex items-center justify-center transition-colors shadow-game">
+                 <ArrowLeft size={20} className="text-white/50" />
               </button>
               <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <Badge variant="ghost">{typeLabels[scenario.type]}</Badge>
-                  <Badge variant="ghost">{scenarioIndex + 1} of {totalScenarios}</Badge>
-                  <span className="text-xs text-white/30 font-display flex items-center gap-1">
-                    <Clock size={10} />{scenario.time}
-                  </span>
+                <div className="text-xs font-display font-black text-cyan uppercase tracking-widest bg-cyan/10 px-2 py-0.5 rounded border border-cyan/20 inline-block mb-1">
+                  STAGE {scenarioIndex + 1}/{totalScenarios}
                 </div>
-                <h1 className="text-xl font-display font-bold text-white">{scenario.title}</h1>
+                <h1 className="text-3xl font-display font-black text-white uppercase text-game-shadow">{scenario.title}</h1>
               </div>
             </div>
-            {/* Progress bar */}
-            <div className="w-32 h-1 rounded-full bg-white/5 overflow-hidden">
-              <div className="h-full rounded-full" style={{
-                width: `${((scenarioIndex + 1) / totalScenarios) * 100}%`,
-                background: `linear-gradient(90deg, ${selectedRole.color}, #C5A3FF)`,
-              }} />
+            <div className="text-right hidden sm:block">
+              <div className="text-[10px] font-display font-bold text-white/30 uppercase tracking-widest mb-1">Objective</div>
+              <div className="text-sm font-display font-bold text-primary">{scenario.description}</div>
             </div>
           </motion.div>
 
-          {/* Scenario context */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-6 rounded-2xl px-5 py-4 glass"
-            style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-          >
-            <p className="text-sm text-white/50">{scenario.description}</p>
+          {/* Playable UI Area */}
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full mb-8 relative">
+            <GameCard className="p-0 overflow-hidden border-4 border-gray-800 bg-[#0B0F1A]">
+              {/* Fake Window Header */}
+              <div className="h-8 bg-gray-900 border-b-2 border-gray-800 flex items-center px-4 gap-2">
+                <div className="w-3 h-3 rounded-full bg-accent border-[1px] border-[#900021]"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-400 border-[1px] border-yellow-700"></div>
+                <div className="w-3 h-3 rounded-full bg-green-400 border-[1px] border-green-700"></div>
+                <div className="ml-4 text-[10px] font-display font-bold text-white/30 uppercase tracking-widest">
+                  Terminal // {scenario.type}
+                </div>
+              </div>
+
+              {/* Injected Minigame UI */}
+              <div className="p-6 h-[400px] overflow-y-auto">
+                {TypeUI && <TypeUI outcome={outcome} roleId={selectedRole.id} biasActive={revealed && hasBias} />}
+              </div>
+            </GameCard>
           </motion.div>
 
-          {/* UI Component */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-6"
-          >
-            <GlitchEffect active={biasActive && biasLevel > 70} intensity="medium">
-              {TypeUI && (
-                <TypeUI
-                  outcome={outcome}
-                  roleId={selectedRole.id}
-                  biasActive={biasActive}
+          {isPersonalMode && !revealed && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full mb-6">
+              <GameCard className="p-5 border-2 border-cyan/30 bg-[#0F1628]">
+                <div className="text-xs font-display font-black tracking-widest uppercase text-cyan mb-2">
+                  Your Move
+                </div>
+                <div className="text-sm font-display font-bold text-white/80 mb-3">
+                  {scenario.personalPrompt || 'Describe how you would respond in this scenario.'}
+                </div>
+                <textarea
+                  value={personalAction}
+                  onChange={(e) => setPersonalAction(e.target.value)}
+                  placeholder="Type your real response here..."
+                  className="w-full min-h-[96px] bg-[#0B0F1A] border-2 border-white/10 rounded-lg p-3 text-sm text-white/90 font-display focus:outline-none focus:border-cyan/50"
                 />
-              )}
-            </GlitchEffect>
-          </motion.div>
-
-          {/* Bias split effect overlay when bias is very high */}
-          <AnimatePresence>
-            {biasActive && biasLevel > 85 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 rounded-2xl px-5 py-4 overflow-hidden"
-                style={{ background: 'rgba(255,77,109,0.06)', border: '1px solid rgba(255,77,109,0.2)' }}
-              >
-                <div className="flex items-center gap-2 text-accent mb-2">
-                  <AlertTriangle size={14} />
-                  <span className="text-xs font-display font-semibold uppercase tracking-widest">Systemic Bias Detected</span>
+                <div className="mt-3">
+                  <div className="text-[11px] font-display font-black uppercase tracking-widest text-white/50 mb-2">
+                    How did the team react?
+                  </div>
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'low', label: 'Supportive' },
+                      { id: 'medium', label: 'Mixed' },
+                      { id: 'high', label: 'Biased' }
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setPersonalBiasView(option.id)}
+                        className={`px-3 py-1.5 rounded-md border text-xs font-display font-bold uppercase tracking-wider transition-colors ${
+                          personalBiasView === option.id
+                            ? 'border-cyan text-cyan bg-cyan/10'
+                            : 'border-white/15 text-white/60 hover:text-white'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs text-white/50 leading-relaxed">
-                  This moment reflects a pattern documented across thousands of real workplaces.
-                  The gap in treatment isn't accidental — it's structural.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </GameCard>
+            </motion.div>
+          )}
 
-          {/* Reveal / Bias detail */}
-          <AnimatePresence>
-            {revealed && hasBias && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="mb-6"
-              >
-                <BiasReveal scenario={scenario} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Outcome text */}
-          <AnimatePresence>
-            {revealed && outcome?.content && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 rounded-2xl px-5 py-4 glass"
-                style={{ border: `1px solid ${selectedRole.color}22` }}
-              >
-                <div className="text-[10px] font-display font-semibold uppercase tracking-widest mb-2" style={{ color: selectedRole.color }}>
-                  What happened to {selectedRole.name}
-                </div>
-                <p className="text-sm text-white/70 leading-relaxed">{outcome.content}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between">
-            <div>
-              {!revealed && (
-                <Button variant="ghost" size="md" onClick={handleReveal}>
-                  Reveal what happened
-                </Button>
+          {/* Reveal & Progression */}
+          <div className="w-full flex flex-col items-center">
+            
+            <AnimatePresence>
+              {revealed && (
+                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full mb-8">
+                  <BiasReveal scenario={scenario} />
+                  
+                  {outcome?.content && (
+                    <div className="mt-4 p-6 bg-[#151928] border-l-4 border-primary shadow-game text-white/80 font-medium font-display leading-relaxed">
+                      {outcome.content}
+                    </div>
+                  )}
+                </motion.div>
               )}
+            </AnimatePresence>
+
+            <div className="w-full h-[60px] flex justify-center items-center">
+              <AnimatePresence mode="wait">
+                {!revealed ? (
+                  <motion.div key="action" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0, opacity: 0 }}>
+                    <GameButton
+                      variant="primary"
+                      size="xl"
+                      onClick={handleReveal}
+                      className="px-16 animate-pulse"
+                      disabled={isPersonalMode && personalAction.trim().length < 12}
+                    >
+                      EXECUTE ACTION
+                    </GameButton>
+                  </motion.div>
+                ) : (
+                  <motion.div key="next" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                    <GameButton variant="cyan" size="lg" onClick={handleComplete} icon={<ChevronRight />} iconPosition="right">
+                      {scenarioIndex >= totalScenarios - 1 ? 'COMPLETE MISSION' : 'NEXT STAGE'}
+                    </GameButton>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <div className="flex items-center gap-3">
-              {revealed && !completed && (
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleComplete}
-                  icon={<ChevronRight size={16} />}
-                  iconPosition="right"
-                >
-                  {scenarioIndex >= totalScenarios - 1 ? 'View Summary' : 'Next Scenario'}
-                </Button>
-              )}
-            </div>
+
           </div>
         </div>
       </div>

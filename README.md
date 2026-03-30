@@ -60,13 +60,19 @@ Install all required Node modules:
 npm install
 ```
 
-### 3. Start the Development Server
+### 3. Configure Firebase (required for Google login)
+1. Create/adapt a Firebase project at https://console.firebase.google.com/ .
+2. In the project, go to Authentication > Sign-in method and enable Google.
+3. In Authentication > Settings, add `localhost:5175` (or your current local origin) to Authorized domains.
+4. (Optional) Replace `src/services/firebase.js` config with your own `firebaseConfig` values if you are using a different project.
+
+### 4. Start the Development Server
 Launch the application locally using Vite:
 ```bash
 npm run dev
 ```
 
-### 4. Experience the Simulation
+### 5. Experience the Simulation
 Open your browser and navigate to the local host address provided in your terminal (typically `http://localhost:5173`).
 
 ---

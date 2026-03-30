@@ -1,16 +1,30 @@
 import { useApp } from '../context/AppContext';
+import { useScenarioEngine } from './useScenarioEngine';
 import scenariosData from '../data/scenarios.json';
 
 export function useBiasEngine() {
   const { state, dispatch } = useApp();
-  const { selectedRole, biasHistory, emotionalScore, visibilityScore, confidenceScore, totalBiasEvents, interruptionCount } = state;
+  const getScenarios = useScenarioEngine();
+  
+  const { 
+    selectedRole,
+    biasHistory, 
+    emotionalScore, 
+    visibilityScore, 
+    confidenceScore, 
+    totalBiasEvents, 
+    interruptionCount 
+  } = state;
 
+  const scenarios = getScenarios();
   const roleId = selectedRole?.id;
 
   // Get outcome for current role on a scenario
   function getOutcome(scenario) {
-    if (!roleId || !scenario?.identityOutcomes) return null;
-    return scenario.identityOutcomes[roleId] || null;
+    if (!roleId || !scenario) return null;
+    const outcomes = scenario.outcomes || scenario.identityOutcomes;
+    if (!outcomes) return null;
+    return outcomes[roleId] || null;
   }
 
   // Calculate overall bias severity (0-100)
@@ -31,9 +45,10 @@ export function useBiasEngine() {
   }
 
   // Complete a scenario and record bias
-  function completeScenario(scenarioId) {
-    const scenario = scenariosData.scenarios.find(s => s.id === scenarioId);
-    const outcome = getOutcome(scenario);
+  function completeScenario(scenarioId, outcomeOverride = null) {
+    const scenario = scenarios.find(s => s.id === scenarioId);
+    if (!scenario) return;
+    const outcome = outcomeOverride || getOutcome(scenario);
     if (!outcome) return;
 
     dispatch({
@@ -41,7 +56,7 @@ export function useBiasEngine() {
       payload: {
         scenarioId,
         biasLevel: outcome.biasLevel || 0,
-        biasType: outcome.biasType || null,
+        biasType: outcome.biasType || scenario.biasMechanism || null,
         biasLabel: outcome.biasLabel || null,
       }
     });
@@ -50,7 +65,7 @@ export function useBiasEngine() {
       dispatch({
         type: 'TRIGGER_BIAS_FLASH',
         payload: {
-          biasType: outcome.biasType,
+          biasType: outcome.biasType || scenario.biasMechanism,
           biasLabel: outcome.biasLabel,
           biasLevel: outcome.biasLevel,
         }
@@ -61,12 +76,13 @@ export function useBiasEngine() {
 
   // Get comparative data between two roles for same scenario
   function getComparison(scenarioId, roleIdA, roleIdB) {
-    const scenario = scenariosData.scenarios.find(s => s.id === scenarioId);
+    const scenario = scenarios.find(s => s.id === scenarioId);
     if (!scenario) return null;
+    const outcomes = scenario.outcomes || scenario.identityOutcomes;
     return {
       scenario,
-      outcomeA: scenario.identityOutcomes[roleIdA],
-      outcomeB: scenario.identityOutcomes[roleIdB],
+      outcomeA: outcomes?.[roleIdA],
+      outcomeB: outcomes?.[roleIdB],
       roleA: scenariosData.roles.find(r => r.id === roleIdA),
       roleB: scenariosData.roles.find(r => r.id === roleIdB),
     };
@@ -95,7 +111,7 @@ export function useBiasEngine() {
     completeScenario,
     getComparison,
     getEmotionalState,
-    scenarios: scenariosData.scenarios,
+    scenarios: scenarios,
     allRoles: scenariosData.roles,
     biasTypes: scenariosData.biasTypes,
     interventions: scenariosData.interventions,

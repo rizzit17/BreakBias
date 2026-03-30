@@ -1,137 +1,85 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { Users, Mic, MicOff, MessageSquare, Clock } from 'lucide-react';
-import GlitchEffect from '../../components/effects/GlitchEffect';
-import Badge from '../../components/ui/Badge';
+import { Video, MicOff, Settings, Users } from 'lucide-react';
 
-const PARTICIPANTS = {
-  'male-manager': [
-    { name: 'Alex Chen', role: 'You', color: '#00D4FF', speaking: false, isYou: true },
-    { name: 'Mark', role: 'Director', color: '#C5A3FF', speaking: true },
-    { name: 'David', role: 'PM', color: '#9B59B6' },
-    { name: 'Emily', role: 'Designer', color: '#FF6B9D' },
-  ],
-  'female-employee': [
-    { name: 'Sarah Chen', role: 'You', color: '#FF6B9D', isYou: true },
-    { name: 'Mark', role: 'Director', color: '#C5A3FF', speaking: true },
-    { name: 'David', role: 'PM', color: '#9B59B6' },
-    { name: 'Emily', role: 'Designer', color: '#00D4FF' },
-  ],
-  'intern': [
-    { name: 'Jamie', role: 'You', color: '#C5A3FF', isYou: true },
-    { name: 'Mark', role: 'Director', color: '#9B59B6', speaking: true },
-    { name: 'David', role: 'PM', color: '#00D4FF' },
-    { name: 'Emily', role: 'Designer', color: '#FF6B9D' },
-  ],
-};
+export default function MeetingUI({ outcome, roleId, biasActive }) {
+  const isTargeted = ['female-employee', 'intern'].includes(roleId);
 
-export default function MeetingUI({ outcome, roleId, biasActive = false }) {
-  const [isMuted, setIsMuted] = useState(false);
-  const participants = PARTICIPANTS[roleId] || PARTICIPANTS['male-manager'];
-  const biasLevel = outcome?.biasLevel || 0;
+  const PARTICIPANTS = [
+    { id: 1, name: 'MARK', role: 'Director', color: '#00D4FF' },
+    { id: 2, name: 'DAVID', role: 'Lead', color: '#FF6B9D' },
+    { id: 3, name: 'EMILY', role: 'Design', color: '#C5A3FF' },
+  ];
 
   return (
-    <GlitchEffect active={biasActive && biasLevel > 60} intensity="medium">
-      <div className="rounded-2xl overflow-hidden glass" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Meeting header */}
-        <div className="bg-black/30 px-4 py-3 flex items-center justify-between border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-display font-semibold text-white/70">LIVE — Q3 Strategy Meeting</span>
-          </div>
-          <div className="flex items-center gap-2 text-white/30 text-xs font-display">
-            <Clock size={10} />
-            <span>42:18</span>
-          </div>
-        </div>
+    <div className="flex flex-col h-full bg-[#151928] border-2 border-white/5 rounded-xl overflow-hidden shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]">
+      
+      {/* Video Grid */}
+      <div className="flex-1 p-2 grid grid-cols-2 gap-2 bg-[#0B0F1A]">
+        {PARTICIPANTS.map((p, i) => (
+          <motion.div 
+            key={p.id} 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: i * 0.15 }}
+            className={`
+               relative rounded-xl overflow-hidden border-[3px] shadow-[0_4px_0_rgba(0,0,0,0.5)] 
+               bg-[#1f2937] flex items-center justify-center
+               ${biasActive && p.id === 1 && isTargeted ? 'border-accent shadow-[0_0_20px_rgba(255,77,109,0.5),_0_4px_0_#900021]' : `border-[${p.color}]10`}
+            `}
+          >
+             <div className="text-4xl font-display font-black text-white/10" style={{ fontFamily: 'Fredoka' }}>{p.name.charAt(0)}</div>
+             
+             {/* Participant Tag */}
+             <div className="absolute bottom-2 left-2 bg-black/80 px-3 py-1 rounded-md border border-white/10 flex items-center gap-2 shadow-game">
+                <div className={`w-2 h-2 rounded-full ${biasActive && p.id === 1 && isTargeted ? 'bg-accent animate-pulse' : 'bg-green-400'}`} />
+                <div>
+                   <div className="text-[10px] font-display font-bold text-white uppercase">{p.name}</div>
+                   <div className="text-[8px] font-display text-white/50 uppercase tracking-widest">{p.role}</div>
+                </div>
+             </div>
 
-        {/* Video grid */}
-        <div className="grid grid-cols-2 gap-2 p-3" style={{ background: '#0a0d16' }}>
-          {participants.map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="relative rounded-xl overflow-hidden aspect-video flex items-center justify-center"
-              style={{
-                background: p.isYou && biasActive && biasLevel > 50
-                  ? 'rgba(255,77,109,0.05)'
-                  : 'rgba(255,255,255,0.02)',
-                border: p.speaking
-                  ? `2px solid ${p.color}`
-                  : p.isYou
-                  ? `1px solid ${p.color}44`
-                  : '1px solid rgba(255,255,255,0.04)',
-                boxShadow: p.speaking ? `0 0 15px ${p.color}44` : 'none',
-              }}
-            >
-              {/* Avatar placeholder */}
-              <div className="w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-sm"
-                style={{ background: `${p.color}22`, color: p.color, border: `1px solid ${p.color}44` }}>
-                {p.name[0]}
-              </div>
-              <span className="absolute bottom-1.5 left-2 text-[10px] text-white/60 font-display">
-                {p.isYou ? 'You' : p.name}
-              </span>
-              {p.speaking && (
-                <motion.div
-                  animate={{ opacity: [1, 0.4, 1] }}
-                  transition={{ duration: 0.6, repeat: Infinity }}
-                  className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                  style={{ background: p.color }}
-                />
-              )}
+             {/* Speaking Indicator */}
+             {biasActive && p.id === 1 && isTargeted && (
+                <div className="absolute top-2 right-2 bg-accent text-white px-2 py-1 rounded text-[10px] uppercase font-black font-display animate-pulse shadow-game border-2 border-[#900021]">
+                   Speaking Over You
+                </div>
+             )}
+          </motion.div>
+        ))}
 
-              {/* Bias visual - blur out your avatar if being ignored */}
-              {p.isYou && biasActive && biasLevel > 70 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.6, 0.3, 0.6] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="absolute inset-0 rounded-xl backdrop-blur-sm"
-                  style={{ background: 'rgba(0,0,0,0.3)' }}
-                />
-              )}
-            </motion.div>
-          ))}
-        </div>
+        {/* You Box */}
+        <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.45 }}
+            className={`
+               relative rounded-xl overflow-hidden border-[3px] shadow-[0_4px_0_rgba(0,0,0,0.5)] 
+               bg-black flex items-center justify-center
+               ${biasActive && isTargeted ? 'border-white/10 grayscale filter arcade-glitch' : 'border-primary/50'}
+            `}
+        >
+             <div className="text-4xl font-display font-black text-white/5 opacity-50">YOU</div>
+             <div className="absolute bottom-2 left-2 bg-black/80 px-3 py-1 rounded-md border border-white/10 shadow-game">
+                <div className="text-[10px] font-display font-bold text-primary uppercase">YOU</div>
+                <div className="text-[8px] font-display text-white/50 uppercase tracking-widest">Player 1</div>
+             </div>
+             {biasActive && isTargeted && (
+               <div className="absolute inset-0 bg-accent/10 pointer-events-none mix-blend-overlay"></div>
+             )}
+        </motion.div>
 
-        {/* Meeting outcome */}
-        {outcome && (
-          <div className="px-4 py-3 border-t border-white/5">
-            <div className="flex items-start gap-2">
-              <MessageSquare size={12} className="text-white/30 mt-0.5 flex-shrink-0" />
-              <div>
-                {outcome.quote && (
-                  <p className="text-xs text-white/60 italic mb-1">"{outcome.quote}"</p>
-                )}
-                {outcome.speakerName && (
-                  <p className="text-[10px] text-white/30 font-display">— {outcome.speakerName}</p>
-                )}
-              </div>
-            </div>
-            {outcome.interruptions > 0 && (
-              <div className="mt-2 flex items-center gap-2">
-                <Badge variant="danger" dot>Interrupted {outcome.interruptions}×</Badge>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Controls */}
-        <div className="bg-black/30 px-4 py-2.5 flex items-center justify-center gap-4 border-t border-white/5">
-          <button onClick={() => setIsMuted(m => !m)}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: isMuted ? 'rgba(255,77,109,0.2)' : 'rgba(255,255,255,0.06)' }}>
-            {isMuted ? <MicOff size={14} className="text-accent" /> : <Mic size={14} className="text-white/60" />}
-          </button>
-          <button className="px-4 py-1.5 rounded-lg text-xs font-display font-semibold"
-            style={{ background: 'rgba(255,77,109,0.15)', color: '#FF4D6D', border: '1px solid rgba(255,77,109,0.2)' }}>
-            Leave
-          </button>
-        </div>
       </div>
-    </GlitchEffect>
+
+      {/* Controls Bar */}
+      <div className="h-16 bg-[#1f2937] border-t-[3px] border-[#0B0F1A] flex items-center justify-center gap-4 px-4 shadow-[inset_0_4px_0_rgba(255,255,255,0.05)]">
+        <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-white border-b-2 border-black/50 hover:translate-y-[1px] hover:border-b-[1px]"><Video size={18} /></button>
+        <button className={`w-10 h-10 rounded-full flex items-center justify-center text-white border-b-2 border-black/50 transition-all ${biasActive && isTargeted ? 'bg-[#FF4D6D] border-[#900021] pointer-events-none' : 'bg-[#FF4D6D] border-[#900021] hover:translate-y-[1px] hover:border-b-[1px]'}`}>
+           <MicOff size={18} />
+        </button>
+        <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-white/50 border-b-2 border-black/50"><Users size={14} /></button>
+        <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-white/50 border-b-2 border-black/50"><Settings size={14} /></button>
+      </div>
+
+    </div>
   );
 }

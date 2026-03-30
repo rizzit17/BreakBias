@@ -2,23 +2,39 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import OutcomeCard from './OutcomeCard';
 import SplitScreen from '../../components/effects/SplitScreen';
+import { useApp } from '../../context/AppContext';
+import { useScenarioEngine } from '../../hooks/useScenarioEngine';
 import scenariosData from '../../data/scenarios.json';
 import Badge from '../../components/ui/Badge';
 import { ArrowRight } from 'lucide-react';
 
 export default function ComparisonView({ roleIdA = 'male-manager', roleIdB = 'female-employee' }) {
-  const [activeScenarioId, setActiveScenarioId] = useState(scenariosData.scenarios[0].id);
-  const activeScenario = scenariosData.scenarios.find(s => s.id === activeScenarioId);
+  const { state } = useApp();
+  const getScenarios = useScenarioEngine();
+  const scenarios = getScenarios();
+  const { completedScenarios } = state;
+
+  // Filter only scenarios the player actually completed
+  const playedScenarios = scenarios.filter(s => completedScenarios.includes(s.id));
+
+  // If hackathon/empty, just show all scenarios for demo purposes
+  const displayScenarios = playedScenarios.length > 0 ? playedScenarios : scenarios;
+
+  const [activeScenarioId, setActiveScenarioId] = useState(displayScenarios[0]?.id);
+  const activeScenario = displayScenarios.find(s => s.id === activeScenarioId);
+  
+  // Roles are static globally
   const roleA = scenariosData.roles.find(r => r.id === roleIdA);
   const roleB = scenariosData.roles.find(r => r.id === roleIdB);
-  const outcomeA = activeScenario?.identityOutcomes?.[roleIdA];
-  const outcomeB = activeScenario?.identityOutcomes?.[roleIdB];
+  
+  const outcomeA = activeScenario?.outcomes?.[roleIdA] || activeScenario?.identityOutcomes?.[roleIdA];
+  const outcomeB = activeScenario?.outcomes?.[roleIdB] || activeScenario?.identityOutcomes?.[roleIdB];
 
   return (
     <div className="h-full flex flex-col">
       {/* Scenario tabs */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 flex-wrap">
-        {scenariosData.scenarios.map(s => (
+        {displayScenarios.map(s => (
           <button
             key={s.id}
             onClick={() => setActiveScenarioId(s.id)}

@@ -1,259 +1,168 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
-import BiasIndicator from '../features/bias/BiasIndicator';
-import Button from '../components/ui/Button';
+import GameCard from '../components/ui/GameCard';
+import GameButton from '../components/ui/GameButton';
 import AvatarMorph from '../components/effects/AvatarMorph';
+import StatBadge from '../components/ui/StatBadge';
 import { useApp } from '../context/AppContext';
-import { useRoleState } from '../hooks/useRoleState';
-import { Mail, MessageSquare, Calendar, ArrowRight, Clock, User, Briefcase } from 'lucide-react';
-import scenariosData from '../data/scenarios.json';
+import { useScenarioEngine } from '../hooks/useScenarioEngine';
+import { useMode } from '../context/ModeContext';
+import { Mail, MessageSquare, MapPin } from 'lucide-react';
 
 const EMAIL_PREVIEWS = {
-  'male-manager': [
-    { from: 'Mark D.', subject: 'Q3 Review — Exceptional Performance', time: '10:30 AM', unread: true, color: '#00D4FF' },
-    { from: 'HR Team', subject: 'Leadership Development Opportunity', time: '9:15 AM', unread: true, color: '#C5A3FF' },
-    { from: 'Emily', subject: 'Design sync tomorrow?', time: '8:45 AM', unread: false, color: '#9B59B6' },
-  ],
-  'female-employee': [
-    { from: 'Mark D.', subject: 'Q3 Review — Performance Notes', time: '10:30 AM', unread: true, color: '#FF4D6D' },
-    { from: 'David', subject: 'Re: Strategy idea', time: '9:00 AM', unread: true, color: '#FF6B9D' },
-    { from: 'HR Team', subject: 'Communication Style Workshop', time: '8:30 AM', unread: false, color: '#9B59B6' },
-  ],
-  'intern': [
-    { from: 'HR Team', subject: 'Internship Check-In', time: '10:30 AM', unread: true, color: '#9B59B6' },
-    { from: 'System', subject: 'Your meeting request is pending', time: '9:00 AM', unread: false, color: '#C5A3FF' },
-    { from: 'Emily', subject: 'Lunch plans?', time: '8:00 AM', unread: false, color: '#9B59B6' },
-  ],
+  'male-manager': [{ from: 'Mark D.', text: 'Q3 Review — Exceptional Performance', unread: true, color: '#00D4FF' }],
+  'female-employee': [{ from: 'Mark D.', text: 'Q3 Review — Performance Notes', unread: true, color: '#FF4D6D' }],
+  'intern': [{ from: 'HR Team', text: 'Internship Check-In', unread: true, color: '#9B59B6' }],
 };
 
-const CALENDAR_EVENTS = [
-  { time: '9:00', title: 'Q3 Strategy Meeting', duration: '1hr', color: '#C5A3FF' },
-  { time: '10:30', title: 'Performance Review Email', duration: '—', color: '#FF6B9D' },
-  { time: '12:00', title: 'Team Slack Discussion', duration: 'Ongoing', color: '#00D4FF' },
-  { time: '3:00', title: 'Promotion Conversation', duration: '30m', color: '#FF4D6D' },
-];
-
 const CHAT_MSGS = {
-  'male-manager': [
-    { sender: 'Mark', text: 'Alex, great job on the roadmap presentation!', time: '9:42 AM' },
-    { sender: 'Emily', text: 'Love the direction you laid out 👏', time: '9:45 AM' },
-    { sender: 'David', text: 'Fully aligned. Let\'s move fast.', time: '9:47 AM' },
-  ],
-  'female-employee': [
-    { sender: 'David', text: 'What Sarah is trying to say is...', time: '9:42 AM' },
-    { sender: 'Mark', text: 'Good point David.', time: '9:43 AM' },
-    { sender: 'Emily', text: 'Hey Sarah, can you take notes?', time: '9:50 AM' },
-  ],
-  'intern': [
-    { sender: 'Mark', text: 'Let\'s table that for the senior team.', time: '9:42 AM' },
-    { sender: 'David', text: 'Interns should shadow first.', time: '9:43 AM' },
-    { sender: 'Emily', text: 'Can you grab coffee for the room?', time: '9:50 AM' },
-  ],
+  'male-manager': [{ sender: 'Mark', text: 'Alex, great job on the presentation!' }],
+  'female-employee': [{ sender: 'David', text: 'What Sarah is trying to say is...' }],
+  'intern': [{ sender: 'Mark', text: 'Let\'s table that for the senior team.' }],
 };
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { state } = useApp();
-  const { selectedRole } = state;
+  const { mode, userContext } = useMode();
+  const getScenarios = useScenarioEngine();
+  const { selectedRole, completedScenarios } = state;
+  const isPersonalMode = mode === 'personal';
 
   if (!selectedRole) {
-    navigate('/role-select');
+    navigate(isPersonalMode ? '/setup' : '/role-select');
     return null;
   }
 
-  const emails = EMAIL_PREVIEWS[selectedRole.id] || EMAIL_PREVIEWS['male-manager'];
-  const chats = CHAT_MSGS[selectedRole.id] || CHAT_MSGS['male-manager'];
-  const scenarios = scenariosData.scenarios;
+  const emails = isPersonalMode
+    ? [{ from: `${userContext?.industry || 'Work'} Ops`, text: `Action Required: ${userContext?.role || 'Contributor'} Ownership Notes`, unread: true, color: '#00D4FF' }]
+    : (EMAIL_PREVIEWS[selectedRole.id] || []);
+  const chats = isPersonalMode
+    ? [{ sender: 'Team Lead', text: `@${userContext?.name || 'You'} please share your approach for this scenario.` }]
+    : (CHAT_MSGS[selectedRole.id] || []);
+  const scenarios = getScenarios();
+  const currentScenarioIndex = completedScenarios.length;
 
   return (
-    <PageWrapper>
-      <div className="min-h-screen pt-20 pb-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Identity header bar */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-2xl p-4 flex items-center justify-between glass"
-            style={{ border: `1px solid ${selectedRole.color}22` }}
-          >
-            <div className="flex items-center gap-4">
-              <AvatarMorph roleId={selectedRole.id} size={48} />
-              <div>
-                <div className="text-xs font-display uppercase tracking-widest mb-0.5" style={{ color: selectedRole.color }}>
-                  You are experiencing this day as
+    <PageWrapper ambientOrbs={false}>
+      <div className="min-h-screen pt-24 pb-16 px-6 bg-game-dark">
+        <div className="max-w-7xl mx-auto grid grid-cols-12 gap-8">
+
+          {/* Main Stage Panel */}
+          <div className="col-span-12 md:col-span-8 space-y-8">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+              <GameCard className="p-8 border-4 !border-primary/50 relative overflow-hidden group">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+
+                <div className="relative z-10">
+                  <StatBadge value="Main Quest" label="Active" color="#C5A3FF" pulse className="mb-6" />
+                  <h1 className="text-4xl md:text-5xl font-display font-black text-white uppercase text-game-shadow mb-4">
+                    Stage {currentScenarioIndex + 1}: The {scenarios[currentScenarioIndex]?.type || 'Day'}
+                  </h1>
+                  <p className="text-white/60 font-display text-lg mb-8 max-w-xl">
+                    {scenarios[currentScenarioIndex]?.title || 'Prepare for your next encounter.'}.
+                    Equip your stats and enter the boardroom.
+                  </p>
+
+                  <GameButton
+                    variant="primary"
+                    size="xl"
+                    onClick={() => navigate(`/scenario/${currentScenarioIndex}`)}
+                    className="w-full sm:w-auto"
+                  >
+                    ENTER STAGE
+                  </GameButton>
                 </div>
-                <h2 className="text-lg font-display font-bold text-white">{selectedRole.name}</h2>
-                <div className="text-xs text-white/40">{selectedRole.title} · {selectedRole.pronoun}</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-xs text-white/30 font-display flex items-center gap-1.5">
-                <Clock size={12} />
-                Monday, March 30
-              </div>
-              <Button variant="primary" size="sm" onClick={() => navigate('/scenario/0')} icon={<ArrowRight size={14} />} iconPosition="right">
-                Start Day
-              </Button>
-            </div>
-          </motion.div>
 
-          {/* Main dashboard grid */}
-          <div className="grid grid-cols-12 gap-4">
-            {/* Email panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="col-span-12 md:col-span-4 rounded-2xl glass overflow-hidden"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                <Mail size={14} className="text-primary/60" />
-                <span className="text-xs font-display font-semibold text-white/60">Inbox</span>
-                <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-display"
-                  style={{ background: 'rgba(197,163,255,0.15)', color: '#C5A3FF' }}>
-                  {emails.filter(e => e.unread).length} new
-                </span>
+                <div className="absolute right-0 bottom-0 opacity-30 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 transition-transform">
+                  <MapPin size={200} color="#C5A3FF" />
+                </div>
+              </GameCard>
+            </motion.div>
+
+            {/* Stage Map / Levels */}
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+              <h2 className="text-xl font-display font-black text-white uppercase mb-4 pl-2 drop-shadow-md">
+                Quest Map
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {scenarios.map((s, i) => {
+                  const isCompleted = completedScenarios.includes(s.id);
+                  const isCurrent = currentScenarioIndex === i;
+                  const isLocked = !isCompleted && !isCurrent;
+
+                  return (
+                    <GameCard
+                      key={s.id}
+                      hover={isCurrent}
+                      className={`p-5 flex items-center gap-4 border-2 ${isLocked ? 'grayscale opacity-50 bg-black/50 border-white/5' : isCurrent ? 'border-primary' : 'border-cyan/50'}`}
+                    >
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-display font-black text-xl border-2
+                          ${isCompleted ? 'bg-cyan/20 border-cyan text-cyan' : isCurrent ? 'bg-primary/20 border-primary text-primary shadow-neon-primary' : 'bg-white/5 border-white/10 text-white/30'}
+                        `}>
+                        {i + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-display font-bold text-white uppercase">{s.title}</h3>
+                        <span className="text-xs font-display text-white/50 uppercase font-bold tracking-widest">{isCompleted ? 'CLEAR' : isLocked ? 'LOCKED' : 'READY'}</span>
+                      </div>
+                    </GameCard>
+                  )
+                })}
               </div>
-              <div className="divide-y divide-white/5">
+            </motion.div>
+          </div>
+
+          {/* Sidebar Modules */}
+          <div className="col-span-12 md:col-span-4 space-y-6">
+
+            {/* Player Stats */}
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+              <GameCard className="p-6 bg-card-dark border-2 border-white/10">
+                <div className="flex items-center gap-4 mb-6">
+                  <AvatarMorph roleId={selectedRole.id} size={64} />
+                  <div>
+                    <h3 className="text-xl font-display font-black text-white uppercase">{selectedRole.name}</h3>
+                    <StatBadge value={selectedRole.title} color={selectedRole.color} />
+                  </div>
+                </div>
+              </GameCard>
+            </motion.div>
+
+            {/* Comms (Email / Chat) */}
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+              <GameCard className="p-0 overflow-hidden bg-card-dark border-2 border-white/10">
+                <div className="bg-[#0B0F1A] px-4 py-3 border-b-2 border-white/10 flex items-center gap-2">
+                  <Mail size={16} className="text-cyan" />
+                  <span className="text-xs font-display font-black text-cyan uppercase tracking-widest">Inbox</span>
+                </div>
                 {emails.map((email, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.1 }}
-                    className="px-4 py-3 hover:bg-white/3 transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5">
-                        {email.unread && <div className="w-1.5 h-1.5 rounded-full" style={{ background: email.color }} />}
-                        <span className="text-xs font-display font-semibold text-white/70 group-hover:text-white transition-colors">{email.from}</span>
-                      </div>
-                      <span className="text-[10px] text-white/25">{email.time}</span>
-                    </div>
-                    <div className="text-xs text-white/40 truncate">{email.subject}</div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Calendar panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="col-span-12 md:col-span-4 rounded-2xl glass overflow-hidden"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                <Calendar size={14} className="text-cyan/60" />
-                <span className="text-xs font-display font-semibold text-white/60">Today's Schedule</span>
-              </div>
-              <div className="p-3 space-y-2">
-                {CALENDAR_EVENTS.map((ev, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="flex items-start gap-3 p-2.5 rounded-xl"
-                    style={{ background: `${ev.color}08`, border: `1px solid ${ev.color}18` }}
-                  >
-                    <div className="w-1 self-stretch rounded-full" style={{ background: ev.color }} />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-display font-semibold text-white/80 truncate">{ev.title}</div>
-                      <div className="text-[10px] text-white/30">{ev.time} · {ev.duration}</div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="px-4 pb-3">
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/scenario/0')}>
-                  Begin Scenario 1 →
-                </Button>
-              </div>
-            </motion.div>
-
-            {/* Chat panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="col-span-12 md:col-span-4 rounded-2xl glass overflow-hidden flex flex-col"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                <MessageSquare size={14} className="text-pink-400/60" />
-                <span className="text-xs font-display font-semibold text-white/60">#product-strategy</span>
-              </div>
-              <div className="flex-1 p-3 space-y-3 overflow-y-auto">
-                {chats.map((msg, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="flex items-start gap-2"
-                  >
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                      style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
-                      {msg.sender[0]}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[10px] font-display font-semibold text-white/50">{msg.sender}</span>
-                        <span className="text-[10px] text-white/20">{msg.time}</span>
-                      </div>
-                      <div className="text-xs text-white/60 bg-white/3 rounded-lg px-2.5 py-1.5" style={{ border: '1px solid rgba(255,255,255,0.04)' }}>
-                        {msg.text}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Bias indicator sidebar */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="col-span-12 md:col-span-4"
-            >
-              <BiasIndicator />
-            </motion.div>
-
-            {/* Scenarios todo list */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="col-span-12 md:col-span-8 rounded-2xl glass p-4"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <div className="font-display text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">
-                Your Day — Upcoming Scenarios
-              </div>
-              <div className="space-y-2">
-                {scenarios.map((s, i) => (
-                  <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <div className="w-6 h-6 rounded-full glass flex items-center justify-center text-[10px] font-display font-bold text-white/40">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs font-display font-semibold text-white/70">{s.title}</div>
-                      <div className="text-[10px] text-white/30">{s.time} · {s.type}</div>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/scenario/${i}`)}>
-                      Go →
-                    </Button>
+                  <div key={i} className="px-4 py-4 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 last:border-0 relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan"></div>
+                    <div className="text-sm font-display font-bold text-white/90 truncate pl-2">{email.text}</div>
+                    <div className="text-xs font-display text-white/40 uppercase font-bold mt-1 pl-2">From: {email.from}</div>
                   </div>
                 ))}
-              </div>
+              </GameCard>
             </motion.div>
+
+            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+              <GameCard className="p-0 overflow-hidden bg-card-dark border-2 border-white/10">
+                <div className="bg-[#0B0F1A] px-4 py-3 border-b-2 border-white/10 flex items-center gap-2">
+                  <MessageSquare size={16} className="text-pink-400" />
+                  <span className="text-xs font-display font-black text-pink-400 uppercase tracking-widest">Team Chat</span>
+                </div>
+                {chats.map((msg, i) => (
+                  <div key={i} className="p-4 hover:bg-white/5 transition-colors cursor-pointer relative">
+                    <div className="text-xs font-display text-white/40 uppercase font-bold mb-1">{msg.sender}</div>
+                    <div className="text-sm font-display font-bold text-white/90 bg-black/50 p-3 rounded-lg border border-white/10 inline-block">{msg.text}</div>
+                  </div>
+                ))}
+              </GameCard>
+            </motion.div>
+
           </div>
         </div>
       </div>

@@ -4,6 +4,9 @@ import Navbar from './components/layout/Navbar';
 
 // Pages
 import Landing from './pages/Landing';
+import ModeSelect from './pages/ModeSelect';
+import Login from './pages/user/Login';
+import UserSetup from './pages/user/UserSetup';
 import Intro from './pages/Intro';
 import RoleSelect from './pages/RoleSelect';
 import Dashboard from './pages/Dashboard';
@@ -20,6 +23,9 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Landing />} />
+        <Route path="/mode-select" element={<ModeSelect />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/setup" element={<UserSetup />} />
         <Route path="/intro" element={<Intro />} />
         <Route path="/role-select" element={<RoleSelect />} />
         <Route path="/dashboard" element={<Dashboard />} />

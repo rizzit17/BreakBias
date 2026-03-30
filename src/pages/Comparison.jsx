@@ -2,88 +2,84 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
 import ComparisonView from '../features/comparison/ComparisonView';
-import Button from '../components/ui/Button';
+import GameButton from '../components/ui/GameButton';
 import { useApp } from '../context/AppContext';
-import { useRoleState } from '../hooks/useRoleState';
-import { ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useMode } from '../context/ModeContext';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export default function Comparison() {
   const navigate = useNavigate();
   const { state } = useApp();
+  const { mode } = useMode();
   const { selectedRole } = state;
-  const { allRoles } = useRoleState();
+  const isPersonalMode = mode === 'personal';
 
-  if (!selectedRole) { navigate('/role-select'); return null; }
+  if (!selectedRole) { navigate(isPersonalMode ? '/setup' : '/role-select'); return null; }
+  if (isPersonalMode) { navigate('/dashboard'); return null; }
 
-  const otherRoles = allRoles.filter(r => r.id !== selectedRole.id);
+  const isMaleManager = selectedRole.id === 'male-manager';
 
   return (
     <PageWrapper ambientOrbs={false}>
-      <div className="min-h-screen flex flex-col" style={{ background: '#070a13' }}>
-        {/* Header */}
-        <div className="bg-black/60 px-6 py-4 flex items-center justify-between border-b border-white/5 relative z-20">
+      <div className="min-h-screen flex flex-col bg-game-grid bg-[#070A13]">
+        
+        {/* Game UI Header */}
+        <div className="bg-[#151928] border-b-4 border-gray-800 px-6 py-4 flex items-center justify-between z-20 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/summary')}
-              className="w-10 h-10 rounded-full glass hover:bg-white/10 flex items-center justify-center transition-colors">
-              <ArrowLeft size={18} className="text-white/60" />
-            </button>
+            <GameButton variant="ghost" size="sm" onClick={() => navigate('/summary')} icon={<ArrowLeft size={18} />}>
+              BACK
+            </GameButton>
             <div>
-              <h1 className="text-xl font-display font-bold text-white">Compare Realities</h1>
-              <div className="text-xs text-white/40 font-display">
-                Same action, different outcome
+              <h1 className="text-2xl font-display font-black text-white uppercase text-game-shadow">VS MODE</h1>
+              <div className="text-[10px] text-white/40 font-display uppercase tracking-widest font-bold">
+                Multiplayer Comparison View
               </div>
             </div>
           </div>
-          <div>
-            <Button
-              variant="primary"
-              onClick={() => navigate('/intervention')}
-              icon={<ShieldCheck size={18} />}
-              iconPosition="left"
-            >
-              Take Action
-            </Button>
-          </div>
+          <GameButton variant="primary" onClick={() => navigate('/intervention')} icon={<ShieldAlert size={18} />}>
+            MOD SETTINGS
+          </GameButton>
         </div>
 
-        {/* Hero split comparison view */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex-1 relative"
-        >
-          {/* Main comparison component */}
-          <ComparisonView
-            roleIdA="male-manager"
-            roleIdB={selectedRole.id === 'male-manager' ? 'female-employee' : selectedRole.id}
-          />
-
-          {/* Callout explaining the gap */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1 }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-sm rounded-2xl p-4 glass-strong text-center z-30"
-            style={{ border: '1px solid rgba(197,163,255,0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(197,163,255,0.1)' }}
-          >
-            <div className="text-xs font-display font-bold uppercase tracking-widest text-primary mb-2">
-              The Reality Gap
-            </div>
-            <p className="text-xs text-white/70 leading-relaxed mb-4">
-              When both identities do the exact same thing, the environment reacts differently. This gap — not individual performance — is the source of systemic bias.
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/intervention')}
-              className="w-full text-xs"
-              icon={<ArrowRight size={14} />}
-              iconPosition="right"
+        {/* Main VS Container */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="flex-1 relative flex flex-col">
+          
+          {/* Big VS Element */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
+            <motion.div 
+               initial={{ scale: 0, rotate: -45 }}
+               animate={{ scale: 1, rotate: 0 }}
+               transition={{ type: 'spring', bounce: 0.6, delay: 0.5 }}
+               className="w-24 h-24 bg-accent rounded-full border-8 border-[#070A13] flex items-center justify-center shadow-game"
             >
-              How do we fix this?
-            </Button>
+              <span className="font-display font-black text-4xl text-[#0B0F1A] pb-1 italic">VS</span>
+            </motion.div>
+          </div>
+
+          {/* The actual comparison view (Split Screen) */}
+          <div className="flex-1 flex w-full relative">
+            <ComparisonView
+              roleIdA="male-manager"
+              roleIdB={isMaleManager ? 'female-employee' : selectedRole.id}
+            />
+          </div>
+
+          {/* Callout */}
+          <motion.div 
+             initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }}
+             className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40"
+          >
+             <div className="bg-[#151928] border-4 border-accent p-4 rounded-xl shadow-game text-center max-w-lg">
+                <div className="text-sm font-display font-black uppercase text-accent mb-2">Notice the Reality Gap?</div>
+                <p className="text-xs font-display font-medium text-white/70 leading-relaxed mb-4">
+                  Player 1 and Player 2 pressed the exact same inputs, but the server reacted differently based on their avatar. This isn't a skill issue. The environment is bugged.
+                </p>
+                <GameButton variant="ghost" size="sm" onClick={() => navigate('/intervention')} className="text-xs w-full">
+                  ACCESS SERVER MODS
+                </GameButton>
+             </div>
           </motion.div>
+
         </motion.div>
       </div>
     </PageWrapper>
