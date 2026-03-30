@@ -101,22 +101,22 @@ export default function Dashboard() {
 
   return (
     <PageWrapper ambientOrbs={false}>
-      <div className="min-h-screen pt-24 pb-16 px-6 bg-game-dark">
+      <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16 px-4 sm:px-6 bg-game-dark">
         <div className="max-w-7xl mx-auto grid grid-cols-12 gap-8">
 
           {/* Main Stage Panel */}
           <div className="col-span-12 md:col-span-8 space-y-8">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-              <GameCard className="p-8 border-4 !border-primary/50 relative overflow-hidden group">
+              <GameCard className="p-5 sm:p-8 border-4 !border-primary/50 relative overflow-hidden group">
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
 
                 <div className="relative z-10">
                   <StatBadge value="Main Quest" label="Active" color="#C5A3FF" pulse className="mb-6" />
-                  <h1 className="text-4xl md:text-5xl font-display font-black text-white uppercase text-game-shadow mb-4">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-black text-white uppercase text-game-shadow mb-4 leading-tight">
                     Stage {currentScenarioIndex + 1}: The {scenarios[currentScenarioIndex]?.type || 'Day'}
                   </h1>
-                  <p className="text-white/60 font-display text-lg mb-8 max-w-xl">
+                  <p className="text-white/60 font-display text-base sm:text-lg mb-6 sm:mb-8 max-w-xl leading-relaxed">
                     {noScenarioReady
                       ? 'Generating your next personalized scenario based on your role, company context, and prior decisions.'
                       : `${scenarios[currentScenarioIndex]?.title || 'Prepare for your next encounter.'}. Equip your stats and enter the boardroom.`}
@@ -155,8 +155,9 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                <div className="absolute right-0 bottom-0 opacity-30 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 transition-transform">
-                  <MapPin size={200} color="#C5A3FF" />
+                <div className="absolute right-0 bottom-0 opacity-20 sm:opacity-30 transform translate-x-1/3 sm:translate-x-1/4 translate-y-1/3 sm:translate-y-1/4 group-hover:scale-110 transition-transform">
+                  <MapPin size={120} color="#C5A3FF" className="sm:hidden" />
+                  <MapPin size={200} color="#C5A3FF" className="hidden sm:block" />
                 </div>
               </GameCard>
             </motion.div>
@@ -184,7 +185,7 @@ export default function Dashboard() {
                         {i + 1}
                       </div>
                       <div>
-                        <h3 className="text-sm font-display font-bold text-white uppercase">{s.title}</h3>
+                        <h3 className="text-sm font-display font-bold text-white uppercase break-words">{s.title}</h3>
                         <span className="text-xs font-display text-white/50 uppercase font-bold tracking-widest">{isCompleted ? 'CLEAR' : isLocked ? 'LOCKED' : 'READY'}</span>
                       </div>
                     </GameCard>
@@ -203,7 +204,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-4 mb-6">
                   <AvatarMorph roleId={selectedRole.id} size={64} />
                   <div>
-                    <h3 className="text-xl font-display font-black text-white uppercase">{selectedRole.name}</h3>
+                    <h3 className="text-lg sm:text-xl font-display font-black text-white uppercase break-words">{selectedRole.name}</h3>
                     <StatBadge value={selectedRole.title} color={selectedRole.color} />
                   </div>
                 </div>

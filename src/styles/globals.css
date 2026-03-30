@@ -263,3 +263,21 @@ body {
 .page-enter-active { opacity: 1; transform: translateY(0) scale(1); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .page-exit { opacity: 1; transform: scale(1); }
 .page-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 0.2s; }
+
+/* ==========================================
+   MOBILE TUNING
+   ========================================== */
+@media (max-width: 640px) {
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+
+  .text-game-shadow {
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8), -1px -1px 0 rgba(255, 255, 255, 0.15);
+  }
+}

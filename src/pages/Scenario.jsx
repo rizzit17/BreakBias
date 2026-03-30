@@ -144,20 +144,20 @@ export default function Scenario() {
     <PageWrapper ambientOrbs={false}>
       <FloatingFeedback messages={feedbacks} />
 
-      <div className="min-h-screen pt-24 pb-16 px-6 bg-[#070A13]">
+      <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16 px-4 sm:px-6 bg-[#070A13]">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
           
           {/* Level Header */}
-          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full flex justify-between items-end mb-8 border-b-4 border-white/5 pb-4">
-            <div className="flex items-center gap-4">
-              <button onClick={() => navigate('/dashboard')} className="w-12 h-12 bg-card-dark border-2 border-white/10 hover:border-white/30 rounded-xl flex items-center justify-center transition-colors shadow-game">
+          <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full flex justify-between items-start sm:items-end mb-6 sm:mb-8 border-b-4 border-white/5 pb-4 gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <button onClick={() => navigate('/dashboard')} className="w-10 h-10 sm:w-12 sm:h-12 bg-card-dark border-2 border-white/10 hover:border-white/30 rounded-xl flex items-center justify-center transition-colors shadow-game shrink-0">
                  <ArrowLeft size={20} className="text-white/50" />
               </button>
-              <div>
-                <div className="text-xs font-display font-black text-cyan uppercase tracking-widest bg-cyan/10 px-2 py-0.5 rounded border border-cyan/20 inline-block mb-1">
+              <div className="min-w-0">
+                <div className="text-[10px] sm:text-xs font-display font-black text-cyan uppercase tracking-widest bg-cyan/10 px-2 py-0.5 rounded border border-cyan/20 inline-block mb-1">
                   STAGE {scenarioIndex + 1}/{totalScenarios}
                 </div>
-                <h1 className="text-3xl font-display font-black text-white uppercase text-game-shadow">{scenario.title}</h1>
+                <h1 className="text-xl sm:text-3xl font-display font-black text-white uppercase text-game-shadow break-words">{scenario.title}</h1>
               </div>
             </div>
             <div className="text-right hidden sm:block">
@@ -167,7 +167,7 @@ export default function Scenario() {
           </motion.div>
 
           {/* Playable UI Area */}
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full mb-8 relative">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full mb-6 sm:mb-8 relative">
             <GameCard className="p-0 overflow-hidden border-4 border-gray-800 bg-[#0B0F1A]">
               {/* Fake Window Header */}
               <div className="h-8 bg-gray-900 border-b-2 border-gray-800 flex items-center px-4 gap-2">
@@ -180,7 +180,7 @@ export default function Scenario() {
               </div>
 
               {/* Injected Minigame UI */}
-              <div className="p-6 h-[400px] overflow-y-auto">
+              <div className="p-4 sm:p-6 h-[320px] sm:h-[400px] overflow-y-auto">
                 {TypeUI && <TypeUI outcome={outcome} roleId={selectedRole.id} biasActive={revealed && hasBias} />}
               </div>
             </GameCard>
@@ -199,7 +199,7 @@ export default function Scenario() {
                   value={personalAction}
                   onChange={(e) => setPersonalAction(e.target.value)}
                   placeholder="Type your real response here..."
-                  className="w-full min-h-[96px] bg-[#0B0F1A] border-2 border-white/10 rounded-lg p-3 text-sm text-white/90 font-display focus:outline-none focus:border-cyan/50"
+                  className="w-full min-h-[110px] sm:min-h-[96px] bg-[#0B0F1A] border-2 border-white/10 rounded-lg p-3 text-sm text-white/90 font-display focus:outline-none focus:border-cyan/50"
                 />
                 <div className="mt-3">
                   <div className="text-[11px] font-display font-black uppercase tracking-widest text-white/50">
@@ -258,7 +258,7 @@ export default function Scenario() {
                       variant="primary"
                       size="xl"
                       onClick={handleReveal}
-                      className="px-16 animate-pulse"
+                      className="px-8 sm:px-16 animate-pulse"
                       disabled={isEvaluating || (isPersonalMode && personalAction.trim().length < 12)}
                     >
                       {isEvaluating ? 'EVALUATING WITH AI...' : 'EXECUTE ACTION'}
