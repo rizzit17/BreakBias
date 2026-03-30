@@ -217,7 +217,7 @@ export default function Landing() {
               letterSpacing: '-0.02em',
             }}
           >
-            ROLE
+            SAME
           </h1>
         </motion.div>
 
@@ -236,7 +236,7 @@ export default function Landing() {
               letterSpacing: '-0.02em',
             }}
           >
-            PLAYD
+            DAY. EXE
           </h1>
           {/* Underline block — Roblox style */}
           <div className="absolute -bottom-2 left-0 right-0 h-3" style={{ background: '#5b21b6', transform: 'skewX(-5deg)' }} />
